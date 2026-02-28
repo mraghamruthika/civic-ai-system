@@ -4,8 +4,14 @@ from datetime import datetime
 import random
 
 from db import (
-    init_db, create_user, get_user_by_phone, verify_user,
-    insert_complaint, get_complaints_by_department, get_complaints_by_user
+    init_db,
+    # user
+    create_user, get_user_by_phone, verify_user,
+    # admin
+    create_admin, get_admin_by_email, verify_admin,
+    # complaints
+    insert_complaint, get_complaints_by_department, get_complaints_by_user,
+    update_complaint_status
 )
 
 app = Flask(__name__)
@@ -85,8 +91,8 @@ def register():
         create_user(name, address, phone, password)
 
         otp = str(random.randint(100000, 999999))
-        session["otp"] = otp
-        session["otp_phone"] = phone
+        session["user_otp"] = otp
+        session["user_otp_phone"] = phone
 
         return redirect(url_for("verify_otp"))
 
@@ -96,11 +102,13 @@ def register():
 @app.route("/verify", methods=["GET", "POST"])
 def verify_otp():
     msg = None
-    otp_demo = session.get("otp")
+    otp_demo = session.get("user_otp")
 
     if request.method == "POST":
-        if request.form.get("otp") == session.get("otp"):
-            verify_user(session.get("otp_phone"))
+        if request.form.get("otp") == session.get("user_otp"):
+            verify_user(session.get("user_otp_phone"))
+            session.pop("user_otp", None)
+            session.pop("user_otp_phone", None)
             return redirect(url_for("login"))
         else:
             msg = "Incorrect OTP"
@@ -117,6 +125,7 @@ def login():
 
         user = get_user_by_phone(phone)
         if user and user["password"] == password and user["verified"] == 1:
+            session.clear()
             session["user_id"] = user["id"]
             session["name"] = user["name"]
             session["address"] = user["address"]
@@ -194,7 +203,6 @@ def home():
     )
 
 
-# ✅ FIX: My complaints route
 @app.route("/my-complaints")
 def my_complaints():
     if "user_id" not in session:
@@ -204,69 +212,91 @@ def my_complaints():
     return render_template("my_complaints.html", complaints=complaints, username=session.get("name"))
 
 
-# ---------------- ADMIN LOGIN (simple) ----------------
-@app.route("/admin-login", methods=["GET", "POST"])
+# ---------------- ADMIN REGISTER + OTP ----------------
+@app.route("/admin/register", methods=["GET", "POST"])
+def admin_register():
+    msg = None
+    if request.method == "POST":
+        name = request.form.get("name")
+        department = request.form.get("department")
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if not email or "@" not in email:
+            msg = "Enter a valid email"
+            return render_template("admin_register.html", msg=msg)
+
+        create_admin(name, department, email, password)
+
+        otp = str(random.randint(100000, 999999))
+        session["admin_otp"] = otp
+        session["admin_otp_email"] = email
+
+        return redirect(url_for("admin_verify"))
+
+    return render_template("admin_register.html", msg=msg)
+
+
+@app.route("/admin/verify", methods=["GET", "POST"])
+def admin_verify():
+    msg = None
+    otp_demo = session.get("admin_otp")
+
+    if request.method == "POST":
+        if request.form.get("otp") == session.get("admin_otp"):
+            verify_admin(session.get("admin_otp_email"))
+            session.pop("admin_otp", None)
+            session.pop("admin_otp_email", None)
+            return redirect(url_for("admin_login"))
+        else:
+            msg = "Incorrect OTP"
+
+    return render_template("admin_verify.html", msg=msg, otp_demo=otp_demo)
+
+
+# ---------------- ADMIN LOGIN ----------------
+@app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     msg = None
     if request.method == "POST":
-        username = request.form.get("username", "")
-        password = request.form.get("password", "")
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-        if username == "admin" and password == "admin123":
+        admin = get_admin_by_email(email)
+        if admin and admin["password"] == password and admin["verified"] == 1:
+            session.clear()
+            session["admin_id"] = admin["id"]
+            session["admin_name"] = admin["name"]
+            session["admin_dept"] = admin["department"]
             session["is_admin"] = True
-            return redirect(url_for("admin_home"))
+            return redirect(url_for("admin_dashboard"))
         else:
-            msg = "Invalid admin credentials"
+            msg = "Invalid email/password or not verified"
 
-    return f"""
-    <html><head><title>Admin Login</title></head>
-    <body style="font-family:Arial;max-width:420px;margin:60px auto;">
-      <h2>Admin Login</h2>
-      <p style="color:red;">{msg or ""}</p>
-      <form method="POST">
-        <label>Username</label><br>
-        <input name="username" style="width:100%;padding:10px;"><br><br>
-        <label>Password</label><br>
-        <input type="password" name="password" style="width:100%;padding:10px;"><br><br>
-        <button style="padding:10px 16px;">Login</button>
-      </form>
-      <p style="margin-top:14px;"><a href="/">Back</a></p>
-    </body></html>
-    """
+    return render_template("admin_login.html", msg=msg)
 
 
-@app.route("/admin")
-def admin_home():
+@app.route("/admin/dashboard")
+def admin_dashboard():
     if not session.get("is_admin"):
         return redirect(url_for("admin_login"))
-    return """
-    <html><head><title>Admin</title></head>
-    <body style="font-family:Arial;max-width:700px;margin:50px auto;">
-      <h2>Admin Dashboard</h2>
-      <p>Open a department dashboard:</p>
-      <ul>
-        <li><a href="/dept/roads">Roads</a></li>
-        <li><a href="/dept/water">Water</a></li>
-        <li><a href="/dept/drainage">Drainage</a></li>
-        <li><a href="/dept/sanitation">Sanitation</a></li>
-        <li><a href="/dept/electricity">Electricity</a></li>
-        <li><a href="/dept/streetlights">Street Lights</a></li>
-        <li><a href="/dept/health">Health</a></li>
-        <li><a href="/dept/animals">Animals</a></li>
-        <li><a href="/dept/emergency">Emergency</a></li>
-        <li><a href="/dept/general">General</a></li>
-      </ul>
-      <p><a href="/logout">Logout</a></p>
-    </body></html>
-    """
 
-
-# ---------------- DEPARTMENT DASHBOARD ----------------
-@app.route("/dept/<dept>")
-def dept_dashboard(dept):
+    dept = session.get("admin_dept", "general")
     complaints = get_complaints_by_department(dept)
     dept_name = dept.replace("_", " ").title()
-    return render_template("department.html", complaints=complaints, dept_name=dept_name, dept=dept)
+    return render_template("department.html", complaints=complaints, dept_name=dept_name, dept=dept, admin_name=session.get("admin_name"))
+
+
+@app.route("/complaint/<int:complaint_id>/status", methods=["POST"])
+def complaint_status_update(complaint_id):
+    if not session.get("is_admin"):
+        return redirect(url_for("admin_login"))
+
+    status = request.form.get("status", "Pending")
+    update_complaint_status(complaint_id, status)
+
+    nxt = request.form.get("next") or url_for("admin_dashboard")
+    return redirect(nxt)
 
 
 if __name__ == "__main__":

@@ -3,88 +3,126 @@
 
 <head>
     <title>Admin Registration</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
             background: linear-gradient(to right, #4e73df, #1cc88a);
             display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            justify-content: center;
         }
 
-        .box {
-            width: 100%;
-            max-width: 420px;
-            background: #fff;
-            border-radius: 16px;
+        .container {
+            width: 460px;
+            max-width: 92%;
+            background: white;
             padding: 28px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+            border-radius: 16px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
         }
 
         h2 {
-            margin: 0 0 6px;
-            color: #111827;
+            margin: 0 0 6px 0;
+            text-align: center;
         }
 
-        .sub {
-            color: #6b7280;
-            margin: 0 0 16px;
+        p.sub {
+            margin: 0 0 16px 0;
+            text-align: center;
+            color: #555;
         }
 
-        input {
+        label {
+            font-weight: 700;
+            display: block;
+            margin-top: 12px;
+        }
+
+        input,
+        select {
             width: 100%;
             padding: 12px;
-            margin: 8px 0;
-            border-radius: 12px;
-            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-top: 6px;
+            outline: none;
         }
 
         button {
             width: 100%;
+            margin-top: 18px;
             padding: 12px;
-            border: 0;
-            border-radius: 12px;
-            background: #111827;
-            color: #fff;
-            font-weight: 900;
+            border: none;
+            border-radius: 10px;
+            background: #4e73df;
+            color: white;
+            font-weight: 800;
             cursor: pointer;
-            margin-top: 10px;
         }
 
         button:hover {
-            opacity: 0.93;
+            background: #2e59d9;
         }
 
         .msg {
-            color: #ef4444;
-            font-weight: 800;
+            color: #b00020;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .small {
+            text-align: center;
+            margin-top: 14px;
+            color: #555;
         }
 
         a {
-            color: #2563eb;
+            color: #2e59d9;
+            font-weight: 700;
             text-decoration: none;
-            font-weight: 800;
         }
     </style>
 </head>
 
 <body>
-    <div class="box">
+    <div class="container">
         <h2>Admin Registration</h2>
-        <p class="sub">Create admin account (demo OTP verification)</p>
-        {% if msg %}<p class="msg">{{ msg }}</p>{% endif %}
+        <p class="sub">Create admin account (email + verification OTP)</p>
+
+        {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+
         <form method="POST">
-            <input name="name" placeholder="Admin Name" required>
-            <input name="email" placeholder="Admin Email" type="email" required>
-            <input name="phone" placeholder="Phone Number" required>
-            <input name="password" placeholder="Password" type="password" required>
+            <label>Name</label>
+            <input name="name" placeholder="Admin name" required>
+
+            <label>Department</label>
+            <select name="department" required>
+                <option value="roads">Roads</option>
+                <option value="water">Water</option>
+                <option value="drainage">Drainage</option>
+                <option value="sanitation">Sanitation</option>
+                <option value="electricity">Electricity</option>
+                <option value="streetlights">Street Lights</option>
+                <option value="health">Health</option>
+                <option value="animals">Animals</option>
+                <option value="emergency">Emergency</option>
+                <option value="general">General</option>
+            </select>
+
+            <label>Email</label>
+            <input name="email" placeholder="admin@example.com" required>
+
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Create password" required>
+
             <button type="submit">Register</button>
         </form>
-        <p style="margin-top:12px;">Already have admin account? <a href="/admin/login">Login</a></p>
+
+        <div class="small">
+            Already registered? <a href="/admin/login">Admin Login</a> • <a href="/">Back</a>
+        </div>
     </div>
 </body>
 

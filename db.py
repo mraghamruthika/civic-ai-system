@@ -25,6 +25,18 @@ def init_db():
     )
     """)
 
+    # Admins table (email-based)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS admins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        department TEXT,
+        email TEXT UNIQUE,
+        password TEXT,
+        verified INTEGER DEFAULT 0
+    )
+    """)
+
     # Complaints table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS complaints (
@@ -73,6 +85,35 @@ def verify_user(phone):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("UPDATE users SET verified=1 WHERE phone=?", (phone,))
+    conn.commit()
+    conn.close()
+
+
+# ---------- ADMIN ----------
+def create_admin(name, department, email, password):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT OR REPLACE INTO admins (name, department, email, password, verified)
+        VALUES (?, ?, ?, ?, COALESCE((SELECT verified FROM admins WHERE email=?), 0))
+    """, (name, department, email, password, email))
+    conn.commit()
+    conn.close()
+
+
+def get_admin_by_email(email):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM admins WHERE email=?", (email,))
+    row = cur.fetchone()
+    conn.close()
+    return row
+
+
+def verify_admin(email):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE admins SET verified=1 WHERE email=?", (email,))
     conn.commit()
     conn.close()
 
@@ -131,3 +172,11 @@ def get_complaints_by_user(user_id):
     rows = cur.fetchall()
     conn.close()
     return rows
+
+
+def update_complaint_status(complaint_id, status):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE complaints SET status=? WHERE id=?", (status, complaint_id))
+    conn.commit()
+    conn.close()
