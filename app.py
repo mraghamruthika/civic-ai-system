@@ -11,10 +11,12 @@ from db import (
 app = Flask(__name__)
 app.secret_key = "change_this_to_any_random_string"
 
+# Folder for image uploads
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# Initialize DB tables (creates if not exists)
 init_db()
 
 
@@ -35,11 +37,11 @@ def get_category(text: str) -> str:
         return "Sanitation"
     if any(k in text for k in ["electricity", "power", "transformer"]):
         return "Electricity"
-    if any(k in text for k in ["street light", "lamp post"]):
+    if any(k in text for k in ["street light", "streetlight", "lamp post", "lamp"]):
         return "Street Lights"
-    if any(k in text for k in ["mosquito", "dengue", "fever"]):
+    if any(k in text for k in ["mosquito", "dengue", "fever", "health"]):
         return "Health & Hygiene"
-    if any(k in text for k in ["dog", "stray", "cow"]):
+    if any(k in text for k in ["dog", "stray", "cow", "animal"]):
         return "Animal Control"
 
     return "General"
@@ -47,7 +49,7 @@ def get_category(text: str) -> str:
 
 def get_priority(text: str) -> str:
     text = (text or "").lower()
-    high_keywords = ["accident", "fire", "hospital", "danger"]
+    high_keywords = ["accident", "fire", "hospital", "danger", "electrocution", "collapse"]
     return "High" if any(w in text for w in high_keywords) else "Medium"
 
 
@@ -80,6 +82,7 @@ def register():
 
         create_user(name, address, phone, password)
 
+        # Demo OTP (not real SMS)
         otp = str(random.randint(100000, 999999))
         session["otp"] = otp
         session["otp_phone"] = phone
@@ -112,6 +115,8 @@ def login():
         password = request.form.get("password")
 
         user = get_user_by_phone(phone)
+
+        # Expected user tuple: (id, name, address, phone, password, verified)
         if user and user[4] == password and user[5] == 1:
             session["user_id"] = user[0]
             session["name"] = user[1]
@@ -119,7 +124,7 @@ def login():
             session["phone"] = user[3]
             return redirect(url_for("home"))
         else:
-            msg = "Invalid credentials"
+            msg = "Invalid credentials / Not verified"
 
     return render_template("login.html", msg=msg)
 
@@ -140,14 +145,27 @@ def home():
     prediction = None
     priority = None
     dept_message = None
+    error = None
 
     if request.method == "POST":
-        complaint = request.form.get("complaint")
+        complaint = request.form.get("complaint", "").strip()
         photo1 = request.files.get("photo1")
         photo2 = request.files.get("photo2")
 
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        # Basic validation
+        if not complaint or not photo1 or not photo2 or photo1.filename == "" or photo2.filename == "":
+            error = "Please enter complaint and upload BOTH images."
+            return render_template(
+                "index.html",
+                prediction=None,
+                priority=None,
+                dept_message=None,
+                error=error,
+                username=session.get("name")
+            )
 
+        # Save images
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         filename1 = f"{timestamp}_1_{photo1.filename}"
         filename2 = f"{timestamp}_2_{photo2.filename}"
 
@@ -157,10 +175,12 @@ def home():
         photo1.save(photo1_path)
         photo2.save(photo2_path)
 
+        # Predict
         prediction = get_category(complaint)
         priority = get_priority(complaint)
         assigned_department = get_department(prediction)
 
+        # Save complaint to DB
         insert_complaint({
             "user_id": session["user_id"],
             "name": session["name"],
@@ -182,6 +202,7 @@ def home():
         prediction=prediction,
         priority=priority,
         dept_message=dept_message,
+        error=error,
         username=session.get("name")
     )
 
@@ -193,5 +214,8 @@ def dept_dashboard(dept):
     return render_template("department.html", complaints=complaints, dept_name=dept_name)
 
 
+# ---------------- RUN ----------------
+# Render uses PORT env var and runs like a server.
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
