@@ -1,19 +1,15 @@
 from flask import Flask, request, render_template, redirect, url_for, session
 import os
-import random
 from datetime import datetime
+import random
 
 from db import (
-    init_db,
-    create_user, get_user_by_phone,
-    create_admin, get_admin_by_email, verify_admin,
-    insert_complaint, get_complaints_by_department, get_all_complaints,
-    update_complaint_status,
-    get_complaints_by_user, get_complaint_by_id
+    init_db, create_user, get_user_by_phone, verify_user,
+    insert_complaint, get_complaints_by_department
 )
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "change_this_to_any_random_string")
+app.secret_key = "change_this_to_any_random_string"
 
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -22,9 +18,11 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 init_db()
 
 
+# ---------------- AI LOGIC ----------------
 
 def get_category(text: str) -> str:
     text = (text or "").lower()
+
     if any(k in text for k in ["fire", "accident", "blast", "electrocution", "collapse"]):
         return "Emergency"
     if any(k in text for k in ["pothole", "road", "bridge", "footpath"]):
@@ -37,18 +35,19 @@ def get_category(text: str) -> str:
         return "Sanitation"
     if any(k in text for k in ["electricity", "power", "transformer"]):
         return "Electricity"
-    if any(k in text for k in ["street light", "streetlight", "lamp post", "lamp"]):
+    if any(k in text for k in ["street light", "lamp post", "streetlight"]):
         return "Street Lights"
-    if any(k in text for k in ["mosquito", "dengue", "fever", "health"]):
+    if any(k in text for k in ["mosquito", "dengue", "fever"]):
         return "Health & Hygiene"
-    if any(k in text for k in ["dog", "stray", "cow", "animal"]):
+    if any(k in text for k in ["dog", "stray", "cow"]):
         return "Animal Control"
+
     return "General"
 
 
 def get_priority(text: str) -> str:
     text = (text or "").lower()
-    high_keywords = ["accident", "fire", "hospital", "danger", "electrocution", "collapse"]
+    high_keywords = ["accident", "fire", "hospital", "danger", "injury", "bleeding"]
     return "High" if any(w in text for w in high_keywords) else "Medium"
 
 
@@ -68,41 +67,73 @@ def get_department(category: str) -> str:
     return mapping.get(category, "general")
 
 
+# ---------------- LANDING PAGE ----------------
+# "/" will show two options: User Login / Admin Login
+@app.route("/")
+def landing():
+    return render_template("landing.html")
+
+
+# Optional alias (if you want /start also)
+@app.route("/start")
+def start():
+    return render_template("landing.html")
+
+
+# ---------------- USER AUTH ----------------
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     msg = None
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        address = request.form.get("address", "").strip()
-        phone = request.form.get("phone", "").strip()
-        password = request.form.get("password", "").strip()
+        name = request.form.get("name")
+        address = request.form.get("address")
+        phone = request.form.get("phone")
+        password = request.form.get("password")
 
-        try:
-            create_user(name, address, phone, password)
-            return redirect(url_for("login"))
-        except Exception:
-            msg = "Phone already registered. Try logging in."
+        create_user(name, address, phone, password)
+
+        otp = str(random.randint(100000, 999999))
+        session["otp"] = otp
+        session["otp_phone"] = phone
+
+        return redirect(url_for("verify_otp"))
 
     return render_template("register.html", msg=msg)
+
+
+@app.route("/verify", methods=["GET", "POST"])
+def verify_otp():
+    msg = None
+    otp_demo = session.get("otp")
+
+    if request.method == "POST":
+        if request.form.get("otp") == session.get("otp"):
+            verify_user(session.get("otp_phone"))
+            # after verification -> user login
+            return redirect(url_for("login"))
+        else:
+            msg = "Incorrect OTP"
+
+    return render_template("verify.html", msg=msg, otp_demo=otp_demo)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     msg = None
     if request.method == "POST":
-        phone = request.form.get("phone", "").strip()
-        password = request.form.get("password", "").strip()
+        phone = request.form.get("phone")
+        password = request.form.get("password")
 
         user = get_user_by_phone(phone)
-        if user and user["password"] == password:
-            session["user_id"] = user["id"]
-            session["name"] = user["name"]
-            session["address"] = user["address"]
-            session["phone"] = user["phone"]
-            return redirect(url_for("home"))
-
-        msg = "Invalid phone or password"
+        if user and user[4] == password and user[5] == 1:
+            session["user_id"] = user[0]
+            session["name"] = user[1]
+            session["address"] = user[2]
+            session["phone"] = user[3]
+            return redirect(url_for("home"))  # goes to /home
+        else:
+            msg = "Invalid credentials or not verified"
 
     return render_template("login.html", msg=msg)
 
@@ -110,86 +141,12 @@ def login():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("login"))
+    return redirect(url_for("landing"))
 
 
-
-def admin_logged_in():
-    return session.get("admin_logged_in") is True
-
-
-@app.route("/admin/register", methods=["GET", "POST"])
-def admin_register():
-    msg = None
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        phone = request.form.get("phone", "").strip()
-        password = request.form.get("password", "").strip()
-
-        try:
-            create_admin(name, email, phone, password)
-        except Exception:
-            msg = "Admin email already exists. Please login."
-            return render_template("admin_register.html", msg=msg)
-
-        otp = str(random.randint(100000, 999999))
-        session["admin_otp"] = otp
-        session["admin_email_pending"] = email
-        return redirect(url_for("admin_verify"))
-
-    return render_template("admin_register.html", msg=msg)
-
-
-@app.route("/admin/verify", methods=["GET", "POST"])
-def admin_verify():
-    msg = None
-    otp_demo = session.get("admin_otp")
-
-    if request.method == "POST":
-        otp_in = request.form.get("otp", "").strip()
-        if otp_in == session.get("admin_otp"):
-            email = session.get("admin_email_pending")
-            verify_admin(email)
-            session.pop("admin_otp", None)
-            session.pop("admin_email_pending", None)
-            return redirect(url_for("admin_login"))
-        msg = "Incorrect OTP. Try again."
-
-    return render_template("admin_verify.html", msg=msg, otp_demo=otp_demo)
-
-
-@app.route("/admin/login", methods=["GET", "POST"])
-def admin_login():
-    msg = None
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "").strip()
-
-        admin = get_admin_by_email(email)
-        if admin and admin["password"] == password:
-            if admin["verified"] != 1:
-                msg = "Admin not verified. Please verify first."
-                return render_template("admin_login.html", msg=msg)
-
-            session["admin_logged_in"] = True
-            session["admin_name"] = admin["name"]
-            return redirect(url_for("admin_dashboard"))
-
-        msg = "Invalid email or password"
-
-    return render_template("admin_login.html", msg=msg)
-
-
-@app.route("/admin/logout")
-def admin_logout():
-    session.pop("admin_logged_in", None)
-    session.pop("admin_name", None)
-    return redirect(url_for("admin_login"))
-
-
-
-@app.route("/", methods=["GET", "POST"])
+# ---------------- USER HOME ----------------
+# your existing complaint page moved from "/" to "/home"
+@app.route("/home", methods=["GET", "POST"])
 def home():
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -197,20 +154,24 @@ def home():
     prediction = None
     priority = None
     dept_message = None
-    error = None
 
     if request.method == "POST":
-        complaint = request.form.get("complaint", "").strip()
+        complaint = request.form.get("complaint")
         photo1 = request.files.get("photo1")
         photo2 = request.files.get("photo2")
 
-        if not complaint or not photo1 or not photo2 or photo1.filename == "" or photo2.filename == "":
-            error = "Please enter complaint and upload BOTH images."
+        # basic safety checks (avoid crash if user doesn't upload)
+        if not complaint:
+            dept_message = "Please type your complaint."
+        elif not photo1 or photo1.filename == "" or not photo2 or photo2.filename == "":
+            dept_message = "Please upload both proof images."
         else:
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
             filename1 = f"{timestamp}_1_{photo1.filename}"
             filename2 = f"{timestamp}_2_{photo2.filename}"
 
+            # save paths
             photo1_path = os.path.join(app.config["UPLOAD_FOLDER"], filename1).replace("\\", "/")
             photo2_path = os.path.join(app.config["UPLOAD_FOLDER"], filename2).replace("\\", "/")
 
@@ -229,7 +190,6 @@ def home():
                 "complaint": complaint,
                 "category": prediction,
                 "priority": priority,
-                "status": "Pending",
                 "photo1_path": photo1_path,
                 "photo2_path": photo2_path,
                 "assigned_department": assigned_department,
@@ -243,74 +203,87 @@ def home():
         prediction=prediction,
         priority=priority,
         dept_message=dept_message,
-        error=error,
         username=session.get("name")
     )
 
 
+# ---------------- ADMIN LOGIN (simple) ----------------
+# If you ALREADY have your own admin system, tell me your route name
+# and I’ll match it. For now this is a basic one.
+#
+# Default admin:
+# username: admin
+# password: admin123
+@app.route("/admin-login", methods=["GET", "POST"])
+def admin_login():
+    msg = None
+    if request.method == "POST":
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
 
-@app.route("/my-complaints")
-def my_complaints():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-    complaints = get_complaints_by_user(session["user_id"])
-    return render_template("my_complaints.html", complaints=complaints, username=session.get("name"))
+        if username == "admin" and password == "admin123":
+            session["is_admin"] = True
+            return redirect(url_for("admin_home"))
+        else:
+            msg = "Invalid admin credentials"
 
-
-@app.route("/my-complaints/<int:complaint_id>")
-def complaint_details(complaint_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    c = get_complaint_by_id(complaint_id)
-    if not c or c["user_id"] != session["user_id"]:
-        return redirect(url_for("my_complaints"))
-
-    return render_template("complaint_details.html", c=c, username=session.get("name"))
-
+    # If you don't have admin_login.html, create it later. For now, we use a very simple page:
+    return f"""
+    <html><head><title>Admin Login</title></head>
+    <body style="font-family:Arial;max-width:420px;margin:60px auto;">
+      <h2>Admin Login</h2>
+      <p style="color:red;">{msg or ""}</p>
+      <form method="POST">
+        <label>Username</label><br>
+        <input name="username" style="width:100%;padding:10px;"><br><br>
+        <label>Password</label><br>
+        <input type="password" name="password" style="width:100%;padding:10px;"><br><br>
+        <button style="padding:10px 16px;">Login</button>
+      </form>
+      <p style="margin-top:14px;"><a href="/">Back</a></p>
+    </body></html>
+    """
 
 
 @app.route("/admin")
-def admin_dashboard():
-    if not admin_logged_in():
+def admin_home():
+    if not session.get("is_admin"):
         return redirect(url_for("admin_login"))
-    complaints = get_all_complaints()
-    return render_template("admin_dashboard.html", complaints=complaints, admin_name=session.get("admin_name"))
+    # simple admin landing: show links to dept dashboards
+    return """
+    <html><head><title>Admin</title></head>
+    <body style="font-family:Arial;max-width:700px;margin:50px auto;">
+      <h2>Admin Dashboard</h2>
+      <p>Open a department dashboard:</p>
+      <ul>
+        <li><a href="/dept/roads">Roads</a></li>
+        <li><a href="/dept/water">Water</a></li>
+        <li><a href="/dept/drainage">Drainage</a></li>
+        <li><a href="/dept/sanitation">Sanitation</a></li>
+        <li><a href="/dept/electricity">Electricity</a></li>
+        <li><a href="/dept/streetlights">Street Lights</a></li>
+        <li><a href="/dept/health">Health</a></li>
+        <li><a href="/dept/animals">Animals</a></li>
+        <li><a href="/dept/emergency">Emergency</a></li>
+        <li><a href="/dept/general">General</a></li>
+      </ul>
+      <p><a href="/logout">Logout</a></p>
+    </body></html>
+    """
 
 
+# ---------------- DEPARTMENT DASHBOARD ----------------
 @app.route("/dept/<dept>")
 def dept_dashboard(dept):
-    if not admin_logged_in():
-        return redirect(url_for("admin_login"))
+    # if you want department pages only for admin, uncomment below:
+    # if not session.get("is_admin"):
+    #     return redirect(url_for("admin_login"))
 
     complaints = get_complaints_by_department(dept)
     dept_name = dept.replace("_", " ").title()
-
-    return render_template(
-        "department.html",
-        complaints=complaints,
-        dept_name=dept_name,
-        dept=dept,
-        admin_name=session.get("admin_name")
-    )
-
-
-@app.route("/complaint/<int:complaint_id>/status", methods=["POST"])
-def change_status(complaint_id):
-    if not admin_logged_in():
-        return redirect(url_for("admin_login"))
-
-    status = request.form.get("status", "")
-    next_url = request.form.get("next") or url_for("admin_dashboard")
-
-    if status not in ["Pending", "In Progress", "Resolved"]:
-        return redirect(next_url)
-
-    update_complaint_status(complaint_id, status)
-    return redirect(next_url)
-
+    return render_template("department.html", complaints=complaints, dept_name=dept_name, dept=dept)
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
