@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Admin Login</title>
+    <title>Admin Registration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
@@ -74,15 +74,17 @@
 
 <body>
     <div class="box">
-        <h2>Admin Login</h2>
-        <p class="sub">Login to manage department dashboards</p>
+        <h2>Admin Registration</h2>
+        <p class="sub">Create admin account (demo OTP verification)</p>
         {% if msg %}<p class="msg">{{ msg }}</p>{% endif %}
         <form method="POST">
+            <input name="name" placeholder="Admin Name" required>
             <input name="email" placeholder="Admin Email" type="email" required>
+            <input name="phone" placeholder="Phone Number" required>
             <input name="password" placeholder="Password" type="password" required>
-            <button type="submit">Login</button>
+            <button type="submit">Register</button>
         </form>
-        <p style="margin-top:12px;">New admin? <a href="/admin/register">Register</a></p>
+        <p style="margin-top:12px;">Already have admin account? <a href="/admin/login">Login</a></p>
     </div>
 </body>
 

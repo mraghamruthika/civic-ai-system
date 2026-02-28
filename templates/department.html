@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>{{ dept_name }} Department - Admin</title>
+    <title>{{ dept_name }} Department</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -13,203 +13,241 @@
             background: linear-gradient(to right, #4e73df, #1cc88a);
         }
 
-        h2 {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
         .container {
             max-width: 1100px;
             margin: auto;
         }
 
-        .card {
-            background: white;
-            padding: 20px;
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
             margin-bottom: 20px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
         }
 
-        .card h3 {
-            margin-bottom: 10px;
-        }
-
-        .info {
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: #555;
-        }
-
-        .badge {
+        .btn {
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 10px;
             display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: white;
-            margin-right: 6px;
+            font-weight: 700;
         }
 
-        .category {
+        .btn-dark {
+            background: #111827;
+            color: #fff;
+        }
+
+        .btn-red {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        h2 {
+            color: #fff;
+            margin: 0;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .meta {
+            color: #4b5563;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+
+        .tags {
+            margin: 10px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            margin-right: 8px;
+            color: #fff;
+        }
+
+        .cat {
             background: #4e73df;
         }
 
-        .priority-high {
-            background: #e74a3b;
+        .high {
+            background: #ef4444;
         }
 
-        .priority-medium {
-            background: #f6c23e;
-            color: black;
+        .medium {
+            background: #f59e0b;
+            color: #111;
         }
 
         .status-pending {
-            background: gray;
+            background: #6b7280;
         }
 
         .status-progress {
-            background: orange;
+            background: #f59e0b;
+            color: #111;
         }
 
         .status-resolved {
-            background: green;
+            background: #22c55e;
         }
 
         .images img {
             width: 180px;
-            border-radius: 8px;
-            margin-top: 8px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
             margin-right: 10px;
-            border: 1px solid #ddd;
+            margin-top: 8px;
         }
 
-        .status-box {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
+        .statusbox {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
 
         select {
-            padding: 6px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-weight: 700;
         }
 
         button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            background: #4e73df;
-            color: white;
+            padding: 9px 12px;
+            border: 0;
+            border-radius: 10px;
+            background: #111827;
+            color: #fff;
+            font-weight: 800;
             cursor: pointer;
-            margin-left: 5px;
         }
 
         button:hover {
-            background: #2e59d9;
+            opacity: 0.92;
         }
 
-        .no-data {
+        .empty {
+            color: #fff;
             text-align: center;
-            color: white;
             font-size: 18px;
             margin-top: 50px;
-        }
-
-        .topbar {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        .logout-btn {
-            background: #e74a3b;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            color: white;
         }
     </style>
 </head>
 
 <body>
-
-    <h2>{{ dept_name }} Department - Admin Dashboard</h2>
-
     <div class="container">
-
         <div class="topbar">
-            <a href="/admin_logout" class="logout-btn">Logout</a>
+            <div>
+                <h2>{{ dept_name }} Department Dashboard</h2>
+                <div style="opacity:0.9; margin-top:4px;">Admin: {{ admin_name }}</div>
+            </div>
+            <div>
+                <a class="btn btn-dark" href="/admin">Admin Dashboard</a>
+                <a class="btn btn-red" href="/admin/logout">Logout</a>
+            </div>
         </div>
 
-        {% if complaints %}
+        {% if complaints and complaints|length > 0 %}
         {% for c in complaints %}
         <div class="card">
+            <div class="row">
+                <div class="col">
+                    <div style="font-size:16px; font-weight:900; color:#111827;">
+                        Complaint #{{ c["id"] }}
+                    </div>
+                    <div class="meta">
+                        👤 <b>{{ c["name"] }}</b> | 📞 {{ c["phone"] }}<br>
+                        📍 {{ c["address"] }}
+                    </div>
 
-            <h3>{{ c["complaint"] }}</h3>
+                    <div style="font-size:15px; font-weight:800; margin-top:8px;">
+                        {{ c["complaint"] }}
+                    </div>
 
-            <div class="info">
-                👤 <b>{{ c["name"] }}</b> |
-                📍 {{ c["address"] }} |
-                📞 {{ c["phone"] }}
-            </div>
+                    <div class="tags">
+                        <span class="tag cat">{{ c["category"] }}</span>
+                        {% if c["priority"] == "High" %}
+                        <span class="tag high">High Priority</span>
+                        {% else %}
+                        <span class="tag medium">Medium Priority</span>
+                        {% endif %}
 
-            <div class="info">
-                <span class="badge category">{{ c["category"] }}</span>
+                        {% if c["status"] == "Pending" %}
+                        <span class="tag status-pending">Pending</span>
+                        {% elif c["status"] == "In Progress" %}
+                        <span class="tag status-progress">In Progress</span>
+                        {% else %}
+                        <span class="tag status-resolved">Resolved</span>
+                        {% endif %}
+                    </div>
 
-                {% if c["priority"] == "High" %}
-                <span class="badge priority-high">High Priority</span>
-                {% else %}
-                <span class="badge priority-medium">Medium Priority</span>
-                {% endif %}
-            </div>
+                    <div class="meta">🕒 {{ c["created_at"] }}</div>
 
-            <div class="images">
-                <img src="/{{ c['photo1_path'] }}" alt="Photo 1">
-                <img src="/{{ c['photo2_path'] }}" alt="Photo 2">
-            </div>
+                    <div class="statusbox">
+                        <b>Status:</b> {{ c["status"] }}
 
-            <div class="status-box">
+                        <form method="POST" action="/complaint/{{ c['id'] }}/status" style="margin:0;">
+                            <input type="hidden" name="next" value="/dept/{{ dept }}">
+                            <select name="status">
+                                <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
+                                <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
+                                <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
+                            </select>
+                            <button type="submit">Update</button>
+                        </form>
+                    </div>
+                </div>
 
-                <p><b>Status:</b>
-                    {% if c["status"] == "Pending" %}
-                    <span class="badge status-pending">Pending</span>
-                    {% elif c["status"] == "In Progress" %}
-                    <span class="badge status-progress">In Progress</span>
-                    {% else %}
-                    <span class="badge status-resolved">Resolved</span>
+                <div class="col images">
+                    {% if c["photo1_path"] %}
+                    <img src="/{{ c['photo1_path'] }}" alt="Photo 1">
                     {% endif %}
-                </p>
-
-                <!-- Status Update Form -->
-                <form method="POST" action="/complaint/{{ c['id'] }}/status">
-                    <input type="hidden" name="next" value="/dept/{{ dept }}">
-
-                    <select name="status">
-                        <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
-                        <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
-                        <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
-                    </select>
-
-                    <button type="submit">Update</button>
-                </form>
-
+                    {% if c["photo2_path"] %}
+                    <img src="/{{ c['photo2_path'] }}" alt="Photo 2">
+                    {% endif %}
+                </div>
             </div>
-
-            <div class="info" style="margin-top:10px;">
-                🕒 {{ c["created_at"] }}
-            </div>
-
         </div>
         {% endfor %}
         {% else %}
-        <div class="no-data">
-            🚫 No complaints assigned to this department.
-        </div>
+        <div class="empty">🚫 No complaints assigned to this department yet.</div>
         {% endif %}
-
     </div>
-
 </body>
 
 </html>

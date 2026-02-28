@@ -128,6 +128,11 @@
             Priority: {{ priority }}
         </div>
         {% endif %}
+        {% if error %}
+        <div style="margin-top:12px; padding:10px; border-radius:10px; background:#fee2e2; font-weight:800;">
+            {{ error }}
+        </div>
+        {% endif %}
 
         <div class="dept-links">
             <b>Department Dashboards:</b><br><br>

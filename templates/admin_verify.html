@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Admin Login</title>
+    <title>Admin Verification</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
@@ -55,34 +55,34 @@
             margin-top: 10px;
         }
 
-        button:hover {
-            opacity: 0.93;
-        }
-
         .msg {
             color: #ef4444;
             font-weight: 800;
         }
 
-        a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 800;
+        .otp {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 10px;
+            font-weight: 900;
+            display: inline-block;
+            margin-top: 6px;
         }
     </style>
 </head>
 
 <body>
     <div class="box">
-        <h2>Admin Login</h2>
-        <p class="sub">Login to manage department dashboards</p>
+        <h2>Admin Verification</h2>
+        <p class="sub">Enter OTP to verify admin (demo)</p>
         {% if msg %}<p class="msg">{{ msg }}</p>{% endif %}
-        <form method="POST">
-            <input name="email" placeholder="Admin Email" type="email" required>
-            <input name="password" placeholder="Password" type="password" required>
-            <button type="submit">Login</button>
+
+        <div>Demo OTP: <span class="otp">{{ otp_demo }}</span></div>
+
+        <form method="POST" style="margin-top:10px;">
+            <input name="otp" placeholder="Enter OTP" required>
+            <button type="submit">Verify</button>
         </form>
-        <p style="margin-top:12px;">New admin? <a href="/admin/register">Register</a></p>
     </div>
 </body>
 

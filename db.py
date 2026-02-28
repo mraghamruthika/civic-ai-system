@@ -6,6 +6,7 @@ DB_NAME = "complaints.db"
 
 def get_conn():
     conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row  # allows c["field"] in templates
     return conn
 
 
@@ -13,7 +14,7 @@ def init_db():
     conn = get_conn()
     cur = conn.cursor()
 
-    # Users table
+    # USERS (citizens)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +25,20 @@ def init_db():
         )
     """)
 
-    # Complaints table (includes status)
+    # ADMINS
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS admins (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            phone TEXT NOT NULL,
+            password TEXT NOT NULL,
+            verified INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL
+        )
+    """)
+
+    # COMPLAINTS (includes status)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS complaints (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,9 +57,8 @@ def init_db():
         )
     """)
 
-    # If older DB exists without status column, add it safely
-    cur.execute("PRAGMA table_info(complaints)")
-    cols = [row[1] for row in cur.fetchall()]
+    # Ensure status column exists for older DBs
+    cols = [r["name"] for r in cur.execute("PRAGMA table_info(complaints)").fetchall()]
     if "status" not in cols:
         cur.execute("ALTER TABLE complaints ADD COLUMN status TEXT DEFAULT 'Pending'")
 
@@ -69,10 +82,38 @@ def create_user(name, address, phone, password):
 def get_user_by_phone(phone):
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE phone = ?", (phone,))
-    user = cur.fetchone()
+    user = cur.execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
     conn.close()
     return user
+
+
+# ---------------- ADMINS ----------------
+
+def create_admin(name, email, phone, password):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO admins (name, email, phone, password, verified, created_at)
+        VALUES (?, ?, ?, ?, 0, ?)
+    """, (name, email, phone, password, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    conn.commit()
+    conn.close()
+
+
+def get_admin_by_email(email):
+    conn = get_conn()
+    cur = conn.cursor()
+    admin = cur.execute("SELECT * FROM admins WHERE email=?", (email,)).fetchone()
+    conn.close()
+    return admin
+
+
+def verify_admin(email):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE admins SET verified=1 WHERE email=?", (email,))
+    conn.commit()
+    conn.close()
 
 
 # ---------------- COMPLAINTS ----------------
@@ -80,27 +121,25 @@ def get_user_by_phone(phone):
 def insert_complaint(data: dict):
     conn = get_conn()
     cur = conn.cursor()
-
     cur.execute("""
         INSERT INTO complaints
         (user_id, name, address, phone, complaint, category, priority, status,
          photo1_path, photo2_path, assigned_department, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        data.get("user_id"),
-        data.get("name"),
-        data.get("address"),
-        data.get("phone"),
-        data.get("complaint"),
-        data.get("category"),
-        data.get("priority"),
+        data["user_id"],
+        data["name"],
+        data["address"],
+        data["phone"],
+        data["complaint"],
+        data["category"],
+        data["priority"],
         data.get("status", "Pending"),
         data.get("photo1_path"),
         data.get("photo2_path"),
-        data.get("assigned_department"),
+        data["assigned_department"],
         data.get("created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     ))
-
     conn.commit()
     conn.close()
 
@@ -108,9 +147,9 @@ def insert_complaint(data: dict):
 def get_complaints_by_department(dept):
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("""
+    rows = cur.execute("""
         SELECT * FROM complaints
-        WHERE assigned_department = ?
+        WHERE assigned_department=?
         ORDER BY
             CASE priority
                 WHEN 'High' THEN 1
@@ -118,15 +157,25 @@ def get_complaints_by_department(dept):
                 ELSE 3
             END,
             id DESC
-    """, (dept,))
-    complaints = cur.fetchall()
+    """, (dept,)).fetchall()
     conn.close()
-    return complaints
+    return rows
+
+
+def get_all_complaints():
+    conn = get_conn()
+    cur = conn.cursor()
+    rows = cur.execute("""
+        SELECT * FROM complaints
+        ORDER BY id DESC
+    """).fetchall()
+    conn.close()
+    return rows
 
 
 def update_complaint_status(complaint_id, status):
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("UPDATE complaints SET status = ? WHERE id = ?", (status, complaint_id))
+    cur.execute("UPDATE complaints SET status=? WHERE id=?", (status, complaint_id))
     conn.commit()
     conn.close()
