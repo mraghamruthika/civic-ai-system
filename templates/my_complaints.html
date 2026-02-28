@@ -146,14 +146,15 @@
             </thead>
             <tbody>
                 {% for c in complaints %}
+                {% set st = c.get("status","Pending") %}
                 <tr>
                     <td>#{{ c["id"] }}</td>
                     <td>{{ c["category"] }}</td>
                     <td>{{ c["priority"] }}</td>
                     <td>
-                        {% if c["status"] == "Pending" %}
+                        {% if st == "Pending" %}
                         <span class="chip pending">Pending</span>
-                        {% elif c["status"] == "In Progress" %}
+                        {% elif st == "In Progress" %}
                         <span class="chip progress">In Progress</span>
                         {% else %}
                         <span class="chip resolved">Resolved</span>
@@ -168,7 +169,6 @@
         {% else %}
         <div class="empty">No complaints yet. Go to Home and submit your first complaint ✅</div>
         {% endif %}
-
     </div>
 
 </body>

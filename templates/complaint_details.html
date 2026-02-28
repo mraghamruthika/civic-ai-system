@@ -129,6 +129,8 @@
             <a class="btn" href="/my-complaints">Back</a>
         </div>
 
+        {% set st = c.get("status","Pending") %}
+
         <div class="card">
             <div class="row">
                 <div class="field"><b>Category:</b> {{ c["category"] }}</div>
@@ -136,18 +138,18 @@
 
                 <div class="field">
                     <b>Status:</b>
-                    {% if c["status"] == "Pending" %}
+                    {% if st == "Pending" %}
                     <span class="chip pending">Pending</span>
-                    {% elif c["status"] == "In Progress" %}
+                    {% elif st == "In Progress" %}
                     <span class="chip progress">In Progress</span>
                     {% else %}
                     <span class="chip resolved">Resolved</span>
                     {% endif %}
                 </div>
 
-                <div class="field"><b>Department:</b> {{ c["assigned_department"] }}</div>
+                <div class="field"><b>Department:</b> {{ c.get("assigned_department","general") }}</div>
                 <div class="field"><b>Created At:</b> {{ c["created_at"] }}</div>
-                <div class="field"><b>Phone:</b> {{ c["phone"] }}</div>
+                <div class="field"><b>Phone:</b> {{ c.get("phone","") }}</div>
             </div>
 
             <div style="margin-top:12px;">
@@ -156,10 +158,10 @@
             </div>
 
             <div class="images">
-                {% if c["photo1_path"] %}
+                {% if c.get("photo1_path") %}
                 <img src="/{{ c['photo1_path'] }}" alt="Proof 1">
                 {% endif %}
-                {% if c["photo2_path"] %}
+                {% if c.get("photo2_path") %}
                 <img src="/{{ c['photo2_path'] }}" alt="Proof 2">
                 {% endif %}
             </div>
