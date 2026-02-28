@@ -1,107 +1,93 @@
 import sqlite3
 
-
 DB_NAME = "complaints.db"
 
 
-def get_conn():
+def get_connection():
     conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row  # ✅ so templates can use dict-style keys
+    conn.row_factory = sqlite3.Row
     return conn
 
 
 def init_db():
-    conn = get_conn()
+    conn = get_connection()
     cur = conn.cursor()
 
-    # ---------- USERS TABLE ----------
+    # Users table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        address TEXT NOT NULL,
-        phone TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
+        name TEXT,
+        address TEXT,
+        phone TEXT UNIQUE,
+        password TEXT,
         verified INTEGER DEFAULT 0
     )
     """)
 
-    # ---------- COMPLAINTS TABLE ----------
+    # Complaints table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS complaints (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        address TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        complaint TEXT NOT NULL,
-        category TEXT NOT NULL,
-        priority TEXT NOT NULL,
+        user_id INTEGER,
+        name TEXT,
+        address TEXT,
+        phone TEXT,
+        complaint TEXT,
+        category TEXT,
+        priority TEXT,
+        status TEXT DEFAULT 'Pending',
         photo1_path TEXT,
         photo2_path TEXT,
-        assigned_department TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        status TEXT DEFAULT 'Pending'
+        assigned_department TEXT,
+        created_at TEXT
     )
     """)
 
-    # ✅ Safe migration: add status column if DB was created earlier without it
-    cols = [r["name"] for r in cur.execute("PRAGMA table_info(complaints)").fetchall()]
-    if "status" not in cols:
-        cur.execute("ALTER TABLE complaints ADD COLUMN status TEXT DEFAULT 'Pending'")
-
     conn.commit()
     conn.close()
 
 
-# ---------------- USER FUNCTIONS ----------------
-
+# ---------- USER ----------
 def create_user(name, address, phone, password):
-    conn = get_conn()
+    conn = get_connection()
     cur = conn.cursor()
-    try:
-        cur.execute("""
-            INSERT INTO users (name, address, phone, password, verified)
-            VALUES (?, ?, ?, ?, 0)
-        """, (name, address, phone, password))
-        conn.commit()
-    except sqlite3.IntegrityError:
-        # phone already exists
-        pass
-    finally:
-        conn.close()
+    cur.execute("""
+        INSERT OR REPLACE INTO users (name, address, phone, password, verified)
+        VALUES (?, ?, ?, ?, COALESCE((SELECT verified FROM users WHERE phone=?), 0))
+    """, (name, address, phone, password, phone))
+    conn.commit()
+    conn.close()
 
 
 def get_user_by_phone(phone):
-    conn = get_conn()
+    conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE phone = ?", (phone,))
-    user = cur.fetchone()
+    cur.execute("SELECT * FROM users WHERE phone=?", (phone,))
+    row = cur.fetchone()
     conn.close()
-    return user
+    return row
 
 
 def verify_user(phone):
-    conn = get_conn()
+    conn = get_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE users SET verified = 1 WHERE phone = ?", (phone,))
+    cur.execute("UPDATE users SET verified=1 WHERE phone=?", (phone,))
     conn.commit()
     conn.close()
 
 
-# ---------------- COMPLAINT FUNCTIONS ----------------
-
+# ---------- COMPLAINTS ----------
 def insert_complaint(data: dict):
-    conn = get_conn()
+    conn = get_connection()
     cur = conn.cursor()
-
-    # Default status for new complaints
-    status = data.get("status", "Pending")
-
     cur.execute("""
-        INSERT INTO complaints
-        (user_id, name, address, phone, complaint, category, priority,
-         photo1_path, photo2_path, assigned_department, created_at, status)
+        INSERT INTO complaints (
+            user_id, name, address, phone, complaint,
+            category, priority, status,
+            photo1_path, photo2_path,
+            assigned_department, created_at
+        )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data["user_id"],
@@ -111,56 +97,37 @@ def insert_complaint(data: dict):
         data["complaint"],
         data["category"],
         data["priority"],
-        data.get("photo1_path"),
-        data.get("photo2_path"),
+        data.get("status", "Pending"),
+        data["photo1_path"],
+        data["photo2_path"],
         data["assigned_department"],
-        data["created_at"],
-        status
+        data["created_at"]
     ))
-
     conn.commit()
     conn.close()
 
 
-def get_complaints_by_department(dept: str):
-    conn = get_conn()
+def get_complaints_by_department(dept):
+    conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
         SELECT * FROM complaints
-        WHERE assigned_department = ?
+        WHERE assigned_department=?
         ORDER BY id DESC
     """, (dept,))
     rows = cur.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return rows
 
 
-# ✅ For "My Complaints" feature
-def get_complaints_by_user(user_id: int):
-    conn = get_conn()
+def get_complaints_by_user(user_id):
+    conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
         SELECT * FROM complaints
-        WHERE user_id = ?
+        WHERE user_id=?
         ORDER BY id DESC
     """, (user_id,))
     rows = cur.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
-
-
-def get_complaint_by_id(complaint_id: int):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM complaints WHERE id = ?", (complaint_id,))
-    row = cur.fetchone()
-    conn.close()
-    return dict(row) if row else None
-
-
-def update_complaint_status(complaint_id: int, status: str):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE complaints SET status = ? WHERE id = ?", (status, complaint_id))
-    conn.commit()
-    conn.close()
+    return rows

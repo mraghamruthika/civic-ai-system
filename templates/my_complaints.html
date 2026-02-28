@@ -3,174 +3,137 @@
 
 <head>
     <title>My Complaints</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4e73df, #1cc88a);
             margin: 0;
-            padding: 20px;
             min-height: 100vh;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            padding: 30px 10px;
         }
 
-        .wrap {
-            width: 100%;
-            max-width: 900px;
+        .container {
+            width: 900px;
+            max-width: 95%;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0px 10px 28px rgba(0, 0, 0, 0.18);
-            padding: 20px;
-            margin-top: 25px;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .title {
-            font-weight: 900;
-            font-size: 20px;
-            color: #111827;
+            margin-bottom: 18px;
         }
 
         .btn {
-            text-decoration: none;
-            font-weight: 900;
             padding: 10px 14px;
-            border-radius: 12px;
-            display: inline-block;
-            background: #111827;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #4e73df;
             color: white;
-        }
-
-        .btn:hover {
-            opacity: 0.92;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            overflow: hidden;
-            border-radius: 12px;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
+            text-decoration: none;
             font-size: 14px;
         }
 
-        th {
-            background: #f3f4f6;
-            color: #111827;
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
         }
 
-        tr:hover {
-            background: #f9fafb;
+        .card {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 14px;
+            transition: 0.2s;
         }
 
-        .chip {
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-weight: 900;
-            font-size: 12px;
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+        }
+
+        .tag {
             display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            background: #f2f2f2;
+            margin-right: 6px;
         }
 
-        .pending {
-            background: #fee2e2;
-            color: #991b1b;
+        .status {
+            font-weight: bold;
         }
 
-        .progress {
-            background: #fef9c3;
-            color: #854d0e;
-        }
-
-        .resolved {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .link {
-            font-weight: 900;
-            color: #2563eb;
-            text-decoration: none;
-        }
-
-        .link:hover {
-            text-decoration: underline;
+        .small {
+            color: #666;
+            font-size: 13px;
         }
 
         .empty {
-            margin-top: 14px;
-            background: #f3f4f6;
-            border-radius: 12px;
-            padding: 14px;
-            font-weight: 900;
-            color: #111827;
+            text-align: center;
+            color: #333;
+            padding: 40px 0;
         }
     </style>
 </head>
 
 <body>
-
-    <div class="wrap">
+    <div class="container">
         <div class="topbar">
-            <div class="title">My Complaints — {{ username }}</div>
-            <a class="btn" href="/">Back to Home</a>
+            <div>
+                <h2 style="margin:0;">My Complaints</h2>
+                <div class="small">Hello {{ username }} 👋</div>
+            </div>
+            <div>
+                <a class="btn" href="/home">+ New Complaint</a>
+                <a class="btn" style="background:#1cc88a;" href="/logout">Logout</a>
+            </div>
         </div>
 
         {% if complaints and complaints|length > 0 %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Category</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>View</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in complaints %}
-                {% set st = c.get("status","Pending") %}
-                <tr>
-                    <td>#{{ c["id"] }}</td>
-                    <td>{{ c["category"] }}</td>
-                    <td>{{ c["priority"] }}</td>
-                    <td>
-                        {% if st == "Pending" %}
-                        <span class="chip pending">Pending</span>
-                        {% elif st == "In Progress" %}
-                        <span class="chip progress">In Progress</span>
-                        {% else %}
-                        <span class="chip resolved">Resolved</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ c["created_at"] }}</td>
-                    <td><a class="link" href="/my-complaints/{{ c['id'] }}">Open</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="cards">
+            {% for c in complaints %}
+            <div class="card">
+                <div style="margin-bottom:10px;">
+                    <span class="tag">{{ c["category"] }}</span>
+                    <span class="tag">{{ c["priority"] }}</span>
+                    <span class="tag status">Status: {{ c["status"] }}</span>
+                </div>
+
+                <div style="margin-bottom:10px;">
+                    <b>Complaint:</b>
+                    <div class="small">{{ c["complaint"] }}</div>
+                </div>
+
+                <div class="small"><b>Department:</b> {{ c["assigned_department"] }}</div>
+                <div class="small"><b>Date:</b> {{ c["created_at"] }}</div>
+
+                <div style="margin-top:10px;">
+                    {% if c["photo1_path"] %}
+                    <img src="/{{ c['photo1_path'] }}" style="width:100%;border-radius:10px;margin-bottom:8px;">
+                    {% endif %}
+                    {% if c["photo2_path"] %}
+                    <img src="/{{ c['photo2_path'] }}" style="width:100%;border-radius:10px;">
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         {% else %}
-        <div class="empty">No complaints yet. Go to Home and submit your first complaint ✅</div>
+        <div class="empty">
+            <h3>No complaints yet</h3>
+            <p>Click <b>New Complaint</b> to submit your first complaint.</p>
+        </div>
         {% endif %}
     </div>
-
 </body>
 
 </html>

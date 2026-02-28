@@ -5,7 +5,7 @@ import random
 
 from db import (
     init_db, create_user, get_user_by_phone, verify_user,
-    insert_complaint, get_complaints_by_department
+    insert_complaint, get_complaints_by_department, get_complaints_by_user
 )
 
 app = Flask(__name__)
@@ -19,7 +19,6 @@ init_db()
 
 
 # ---------------- AI LOGIC ----------------
-
 def get_category(text: str) -> str:
     text = (text or "").lower()
 
@@ -67,21 +66,13 @@ def get_department(category: str) -> str:
     return mapping.get(category, "general")
 
 
-# ---------------- LANDING PAGE ----------------
-# "/" will show two options: User Login / Admin Login
+# ---------------- LANDING ----------------
 @app.route("/")
 def landing():
     return render_template("landing.html")
 
 
-# Optional alias (if you want /start also)
-@app.route("/start")
-def start():
-    return render_template("landing.html")
-
-
 # ---------------- USER AUTH ----------------
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     msg = None
@@ -110,7 +101,6 @@ def verify_otp():
     if request.method == "POST":
         if request.form.get("otp") == session.get("otp"):
             verify_user(session.get("otp_phone"))
-            # after verification -> user login
             return redirect(url_for("login"))
         else:
             msg = "Incorrect OTP"
@@ -126,12 +116,12 @@ def login():
         password = request.form.get("password")
 
         user = get_user_by_phone(phone)
-        if user and user[4] == password and user[5] == 1:
-            session["user_id"] = user[0]
-            session["name"] = user[1]
-            session["address"] = user[2]
-            session["phone"] = user[3]
-            return redirect(url_for("home"))  # goes to /home
+        if user and user["password"] == password and user["verified"] == 1:
+            session["user_id"] = user["id"]
+            session["name"] = user["name"]
+            session["address"] = user["address"]
+            session["phone"] = user["phone"]
+            return redirect(url_for("home"))
         else:
             msg = "Invalid credentials or not verified"
 
@@ -145,7 +135,6 @@ def logout():
 
 
 # ---------------- USER HOME ----------------
-# your existing complaint page moved from "/" to "/home"
 @app.route("/home", methods=["GET", "POST"])
 def home():
     if "user_id" not in session:
@@ -160,18 +149,15 @@ def home():
         photo1 = request.files.get("photo1")
         photo2 = request.files.get("photo2")
 
-        # basic safety checks (avoid crash if user doesn't upload)
         if not complaint:
             dept_message = "Please type your complaint."
         elif not photo1 or photo1.filename == "" or not photo2 or photo2.filename == "":
             dept_message = "Please upload both proof images."
         else:
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
             filename1 = f"{timestamp}_1_{photo1.filename}"
             filename2 = f"{timestamp}_2_{photo2.filename}"
 
-            # save paths
             photo1_path = os.path.join(app.config["UPLOAD_FOLDER"], filename1).replace("\\", "/")
             photo2_path = os.path.join(app.config["UPLOAD_FOLDER"], filename2).replace("\\", "/")
 
@@ -190,6 +176,7 @@ def home():
                 "complaint": complaint,
                 "category": prediction,
                 "priority": priority,
+                "status": "Pending",
                 "photo1_path": photo1_path,
                 "photo2_path": photo2_path,
                 "assigned_department": assigned_department,
@@ -207,13 +194,17 @@ def home():
     )
 
 
+# ✅ FIX: My complaints route
+@app.route("/my-complaints")
+def my_complaints():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    complaints = get_complaints_by_user(session["user_id"])
+    return render_template("my_complaints.html", complaints=complaints, username=session.get("name"))
+
+
 # ---------------- ADMIN LOGIN (simple) ----------------
-# If you ALREADY have your own admin system, tell me your route name
-# and I’ll match it. For now this is a basic one.
-#
-# Default admin:
-# username: admin
-# password: admin123
 @app.route("/admin-login", methods=["GET", "POST"])
 def admin_login():
     msg = None
@@ -227,7 +218,6 @@ def admin_login():
         else:
             msg = "Invalid admin credentials"
 
-    # If you don't have admin_login.html, create it later. For now, we use a very simple page:
     return f"""
     <html><head><title>Admin Login</title></head>
     <body style="font-family:Arial;max-width:420px;margin:60px auto;">
@@ -249,7 +239,6 @@ def admin_login():
 def admin_home():
     if not session.get("is_admin"):
         return redirect(url_for("admin_login"))
-    # simple admin landing: show links to dept dashboards
     return """
     <html><head><title>Admin</title></head>
     <body style="font-family:Arial;max-width:700px;margin:50px auto;">
@@ -275,10 +264,6 @@ def admin_home():
 # ---------------- DEPARTMENT DASHBOARD ----------------
 @app.route("/dept/<dept>")
 def dept_dashboard(dept):
-    # if you want department pages only for admin, uncomment below:
-    # if not session.get("is_admin"):
-    #     return redirect(url_for("admin_login"))
-
     complaints = get_complaints_by_department(dept)
     dept_name = dept.replace("_", " ").title()
     return render_template("department.html", complaints=complaints, dept_name=dept_name, dept=dept)
