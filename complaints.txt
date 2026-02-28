@@ -1,0 +1,9 @@
+
+Name: Ragha Mruthika
+Area: Periyar Nagar
+Complaint: Garbages not collected for past 3 days
+Category: Sanitation
+Priority: Medium
+Photo1: static/uploads\20260226140915_1.jpg
+Photo2: static/uploads\20260226140915_2.jpg
+----------------------------------------

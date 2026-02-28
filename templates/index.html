@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Civic AI Complaint System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0px 4px 22px rgba(0, 0, 0, 0.2);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logout {
+            text-decoration: none;
+            background: #ef4444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2e59d9;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f3f6ff;
+            font-weight: bold;
+        }
+
+        .success {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #d1fae5;
+            font-weight: bold;
+        }
+
+        .dept-links {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f3f6ff;
+        }
+
+        .dept-links a {
+            margin-right: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            color: #2e59d9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="topbar">
+            <div>Hi, {{ username }} 👋</div>
+            <a class="logout" href="/logout">Logout</a>
+        </div>
+
+        <h2>Submit Complaint</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            <textarea name="complaint" rows="4" placeholder="Enter complaint description..." required></textarea>
+
+            <input type="file" name="photo1" accept="image/*" required>
+            <input type="file" name="photo2" accept="image/*" required>
+
+            <button type="submit">Submit Complaint</button>
+        </form>
+
+        {% if dept_message %}
+        <div class="success">{{ dept_message }}</div>
+        {% endif %}
+
+        {% if prediction %}
+        <div class="result">
+            Category: {{ prediction }} <br>
+            Priority: {{ priority }}
+        </div>
+        {% endif %}
+
+        <div class="dept-links">
+            <b>Department Dashboards:</b><br><br>
+            <a href="/dept/water">Water</a>
+            <a href="/dept/roads">Roads</a>
+            <a href="/dept/sanitation">Sanitation</a>
+            <a href="/dept/electricity">Electricity</a>
+            <a href="/dept/drainage">Drainage</a>
+            <a href="/dept/streetlights">Streetlights</a>
+            <a href="/dept/health">Health</a>
+            <a href="/dept/animals">Animals</a>
+            <a href="/dept/emergency">Emergency</a>
+            <a href="/dept/general">General</a>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Verify OTP - Civic AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 18px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 520px;
+            background: #fff;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 4px 22px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            margin: 0 0 6px 0;
+            text-align: center;
+        }
+
+        p.sub {
+            margin: 0 0 16px 0;
+            text-align: center;
+            color: #555;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #4e73df;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2e59d9;
+        }
+
+        .msg {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #fde2e2;
+            border: 1px solid #f5c2c7;
+            color: #a11a1a;
+            font-weight: 700;
+        }
+
+        .otpbox {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f3f6ff;
+            border: 1px solid #dbe4ff;
+            font-weight: 800;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>OTP Verification</h2>
+        <p class="sub">One-time verification to activate account</p>
+
+        <!-- PoC DEMO OTP (remove in real system) -->
+        <div class="otpbox">Demo OTP: {{ otp_demo }}</div>
+
+        {% if msg %}
+        <div class="msg">{{ msg }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <label>Enter OTP</label>
+            <input name="otp" placeholder="6-digit OTP" required>
+            <button type="submit">Verify</button>
+        </form>
+    </div>
+</body>
+
+</html>
