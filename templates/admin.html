@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f7fb;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        th {
+            background: #222;
+            color: white;
+            text-align: left;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 999px;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        .Pending {
+            background: #fff3cd;
+        }
+
+        .InProgress {
+            background: #cfe2ff;
+        }
+
+        .Resolved {
+            background: #d1e7dd;
+        }
+
+        select,
+        button {
+            padding: 6px 10px;
+        }
+
+        a {
+            color: #0b5ed7;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Admin Dashboard (All Complaints)</h2>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Complaint</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Dept</th>
+            <th>Status</th>
+            <th>Update</th>
+        </tr>
+
+        {% for c in complaints %}
+        <tr>
+            <td>{{ c["id"] }}</td>
+            <td>
+                <b>{{ c["name"] }}</b><br>
+                {{ c["phone"] }}<br>
+                <small>{{ c["address"] }}</small>
+            </td>
+            <td>
+                {{ c["complaint"] }}<br><br>
+                {% if c["photo1_path"] %}<a target="_blank" href="/{{ c['photo1_path'] }}">Photo1</a>{% endif %}
+                {% if c["photo2_path"] %} | <a target="_blank" href="/{{ c['photo2_path'] }}">Photo2</a>{% endif %}
+            </td>
+            <td>{{ c["category"] }}</td>
+            <td>{{ c["priority"] }}</td>
+            <td>{{ c["assigned_department"] }}</td>
+            <td><span class="tag {{ c['status'].replace(' ', '') }}">{{ c["status"] }}</span></td>
+            <td>
+                <form method="POST" action="/complaint/{{ c['id'] }}/status">
+                    <input type="hidden" name="next" value="/admin">
+                    <select name="status">
+                        <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
+                        <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
+                        <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
+                    </select>
+                    <button type="submit">Save</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>
