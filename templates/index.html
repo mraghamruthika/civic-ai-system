@@ -9,91 +9,125 @@
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #4e73df, #1cc88a);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             margin: 0;
             padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
 
         .container {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
             width: 100%;
-            max-width: 600px;
-            box-shadow: 0px 4px 22px rgba(0, 0, 0, 0.2);
+            max-width: 650px;
+            background: white;
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0px 10px 28px rgba(0, 0, 0, 0.18);
+            margin-top: 30px;
         }
 
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
         }
 
-        .logout {
+        .welcome {
+            font-weight: 900;
+            color: #111827;
+            font-size: 16px;
+        }
+
+        .actions a {
             text-decoration: none;
+            font-weight: 900;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        .btn-dark {
+            background: #111827;
+            color: white;
+        }
+
+        .btn-red {
             background: #ef4444;
             color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 14px;
+        }
+
+        .btn-blue {
+            background: #2563eb;
+            color: white;
+        }
+
+        h2 {
+            margin: 0 0 12px 0;
+            color: #111827;
         }
 
         textarea,
         input[type="file"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
             margin-top: 8px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            box-sizing: border-box;
         }
 
         button {
             width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            background: #4e73df;
+            background-color: #111827;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 12px;
+            border-radius: 12px;
             cursor: pointer;
+            font-weight: 900;
+            margin-top: 12px;
         }
 
         button:hover {
-            background: #2e59d9;
+            opacity: 0.93;
         }
 
         .result {
-            margin-top: 15px;
+            margin-top: 16px;
             padding: 12px;
-            border-radius: 8px;
-            background: #f3f6ff;
-            font-weight: bold;
+            border-radius: 12px;
+            background: #f3f4f6;
+            font-weight: 800;
+            color: #111827;
         }
 
-        .success {
-            margin-top: 12px;
-            padding: 10px;
-            border-radius: 8px;
-            background: #d1fae5;
-            font-weight: bold;
+        .msg-green {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #dcfce7;
+            font-weight: 900;
+            color: #166534;
         }
 
-        .dept-links {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            background: #f3f6ff;
+        .msg-red {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #fee2e2;
+            font-weight: 900;
+            color: #991b1b;
         }
 
-        .dept-links a {
-            margin-right: 8px;
-            font-weight: bold;
-            text-decoration: none;
-            color: #2e59d9;
+        .hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6b7280;
         }
     </style>
 </head>
@@ -103,50 +137,42 @@
     <div class="container">
 
         <div class="topbar">
-            <div>Hi, {{ username }} 👋</div>
-            <a class="logout" href="/logout">Logout</a>
+            <div class="welcome">Welcome, {{ username }}</div>
+            <div class="actions">
+                <a class="btn-blue" href="/my-complaints">My Complaints</a>
+                <a class="btn-red" href="/logout">Logout</a>
+            </div>
         </div>
 
-        <h2>Submit Complaint</h2>
+        <h2>AI Civic Complaint System</h2>
 
         <form method="POST" enctype="multipart/form-data">
-            <textarea name="complaint" rows="4" placeholder="Enter complaint description..." required></textarea>
+            <label><b>Complaint Description</b></label>
+            <textarea name="complaint" rows="4" placeholder="Enter your complaint..." required></textarea>
 
+            <label style="display:block; margin-top:10px;"><b>Upload Proof Images (2)</b></label>
             <input type="file" name="photo1" accept="image/*" required>
             <input type="file" name="photo2" accept="image/*" required>
+
+            <div class="hint">Tip: Use clear photos for better verification.</div>
 
             <button type="submit">Submit Complaint</button>
         </form>
 
+        {% if error %}
+        <div class="msg-red">{{ error }}</div>
+        {% endif %}
+
         {% if dept_message %}
-        <div class="success">{{ dept_message }}</div>
+        <div class="msg-green">{{ dept_message }}</div>
         {% endif %}
 
         {% if prediction %}
         <div class="result">
-            Category: {{ prediction }} <br>
-            Priority: {{ priority }}
+            Category: <b>{{ prediction }}</b><br>
+            Priority: <b>{{ priority }}</b>
         </div>
         {% endif %}
-        {% if error %}
-        <div style="margin-top:12px; padding:10px; border-radius:10px; background:#fee2e2; font-weight:800;">
-            {{ error }}
-        </div>
-        {% endif %}
-
-        <div class="dept-links">
-            <b>Department Dashboards:</b><br><br>
-            <a href="/dept/water">Water</a>
-            <a href="/dept/roads">Roads</a>
-            <a href="/dept/sanitation">Sanitation</a>
-            <a href="/dept/electricity">Electricity</a>
-            <a href="/dept/drainage">Drainage</a>
-            <a href="/dept/streetlights">Streetlights</a>
-            <a href="/dept/health">Health</a>
-            <a href="/dept/animals">Animals</a>
-            <a href="/dept/emergency">Emergency</a>
-            <a href="/dept/general">General</a>
-        </div>
 
     </div>
 

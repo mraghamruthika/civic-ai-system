@@ -8,7 +8,8 @@ from db import (
     create_user, get_user_by_phone,
     create_admin, get_admin_by_email, verify_admin,
     insert_complaint, get_complaints_by_department, get_all_complaints,
-    update_complaint_status
+    update_complaint_status,
+    get_complaints_by_user, get_complaint_by_id
 )
 
 app = Flask(__name__)
@@ -21,7 +22,6 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 init_db()
 
 
-# ---------------- AI LOGIC ----------------
 
 def get_category(text: str) -> str:
     text = (text or "").lower()
@@ -68,7 +68,6 @@ def get_department(category: str) -> str:
     return mapping.get(category, "general")
 
 
-# ---------------- USER AUTH ----------------
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -102,6 +101,7 @@ def login():
             session["address"] = user["address"]
             session["phone"] = user["phone"]
             return redirect(url_for("home"))
+
         msg = "Invalid phone or password"
 
     return render_template("login.html", msg=msg)
@@ -113,7 +113,6 @@ def logout():
     return redirect(url_for("login"))
 
 
-# ---------------- ADMIN AUTH (Register + OTP Verify + Login) ----------------
 
 def admin_logged_in():
     return session.get("admin_logged_in") is True
@@ -134,11 +133,9 @@ def admin_register():
             msg = "Admin email already exists. Please login."
             return render_template("admin_register.html", msg=msg)
 
-        # Demo OTP
         otp = str(random.randint(100000, 999999))
         session["admin_otp"] = otp
         session["admin_email_pending"] = email
-
         return redirect(url_for("admin_verify"))
 
     return render_template("admin_register.html", msg=msg)
@@ -147,7 +144,7 @@ def admin_register():
 @app.route("/admin/verify", methods=["GET", "POST"])
 def admin_verify():
     msg = None
-    otp_demo = session.get("admin_otp")  # demo display
+    otp_demo = session.get("admin_otp")
 
     if request.method == "POST":
         otp_in = request.form.get("otp", "").strip()
@@ -191,7 +188,6 @@ def admin_logout():
     return redirect(url_for("admin_login"))
 
 
-# ---------------- HOME (Citizen complaint submit) ----------------
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -252,13 +248,32 @@ def home():
     )
 
 
-# ---------------- ADMIN DASHBOARD ----------------
+
+@app.route("/my-complaints")
+def my_complaints():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    complaints = get_complaints_by_user(session["user_id"])
+    return render_template("my_complaints.html", complaints=complaints, username=session.get("name"))
+
+
+@app.route("/my-complaints/<int:complaint_id>")
+def complaint_details(complaint_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    c = get_complaint_by_id(complaint_id)
+    if not c or c["user_id"] != session["user_id"]:
+        return redirect(url_for("my_complaints"))
+
+    return render_template("complaint_details.html", c=c, username=session.get("name"))
+
+
 
 @app.route("/admin")
 def admin_dashboard():
     if not admin_logged_in():
         return redirect(url_for("admin_login"))
-
     complaints = get_all_complaints()
     return render_template("admin_dashboard.html", complaints=complaints, admin_name=session.get("admin_name"))
 
@@ -295,7 +310,6 @@ def change_status(complaint_id):
     return redirect(next_url)
 
 
-# ---------------- RUN ----------------
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

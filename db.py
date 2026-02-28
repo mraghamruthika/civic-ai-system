@@ -6,7 +6,7 @@ DB_NAME = "complaints.db"
 
 def get_conn():
     conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row  # allows c["field"] in templates
+    conn.row_factory = sqlite3.Row  
     return conn
 
 
@@ -14,7 +14,6 @@ def init_db():
     conn = get_conn()
     cur = conn.cursor()
 
-    # USERS (citizens)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,7 +24,6 @@ def init_db():
         )
     """)
 
-    # ADMINS
     cur.execute("""
         CREATE TABLE IF NOT EXISTS admins (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,7 +36,6 @@ def init_db():
         )
     """)
 
-    # COMPLAINTS (includes status)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS complaints (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +54,6 @@ def init_db():
         )
     """)
 
-    # Ensure status column exists for older DBs
     cols = [r["name"] for r in cur.execute("PRAGMA table_info(complaints)").fetchall()]
     if "status" not in cols:
         cur.execute("ALTER TABLE complaints ADD COLUMN status TEXT DEFAULT 'Pending'")
@@ -66,7 +62,6 @@ def init_db():
     conn.close()
 
 
-# ---------------- USERS ----------------
 
 def create_user(name, address, phone, password):
     conn = get_conn()
@@ -87,7 +82,6 @@ def get_user_by_phone(phone):
     return user
 
 
-# ---------------- ADMINS ----------------
 
 def create_admin(name, email, phone, password):
     conn = get_conn()
@@ -116,7 +110,6 @@ def verify_admin(email):
     conn.close()
 
 
-# ---------------- COMPLAINTS ----------------
 
 def insert_complaint(data: dict):
     conn = get_conn()
@@ -165,10 +158,7 @@ def get_complaints_by_department(dept):
 def get_all_complaints():
     conn = get_conn()
     cur = conn.cursor()
-    rows = cur.execute("""
-        SELECT * FROM complaints
-        ORDER BY id DESC
-    """).fetchall()
+    rows = cur.execute("SELECT * FROM complaints ORDER BY id DESC").fetchall()
     conn.close()
     return rows
 
@@ -179,3 +169,23 @@ def update_complaint_status(complaint_id, status):
     cur.execute("UPDATE complaints SET status=? WHERE id=?", (status, complaint_id))
     conn.commit()
     conn.close()
+
+
+def get_complaints_by_user(user_id):
+    conn = get_conn()
+    cur = conn.cursor()
+    rows = cur.execute("""
+        SELECT * FROM complaints
+        WHERE user_id=?
+        ORDER BY id DESC
+    """, (user_id,)).fetchall()
+    conn.close()
+    return rows
+
+
+def get_complaint_by_id(complaint_id):
+    conn = get_conn()
+    cur = conn.cursor()
+    row = cur.execute("SELECT * FROM complaints WHERE id=?", (complaint_id,)).fetchone()
+    conn.close()
+    return row
