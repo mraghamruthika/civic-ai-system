@@ -25,50 +25,51 @@ init_db()
 
 
 # ---------------- AI LOGIC ----------------
+import joblib
+
+MODEL = None
+MODEL_PATH = "model.pkl"
+
+def load_model():
+    global MODEL
+    if MODEL is None:
+        if os.path.exists(MODEL_PATH):
+            MODEL = joblib.load(MODEL_PATH)
+    return MODEL
+
+
 def get_category(text: str) -> str:
-    text = (text or "").lower()
-    if any(k in text for k in ["fire", "accident", "blast", "electrocution", "collapse"]):
+    text = (text or "").strip()
+    m = load_model()
+
+    # If ML model exists, use it
+    if m is not None and text:
+        try:
+            return m.predict([text])[0]
+        except Exception:
+            pass  # fallback below if something fails
+
+    # Fallback keyword logic (safe backup)
+    t = text.lower()
+    if any(k in t for k in ["fire", "accident", "blast", "electrocution", "collapse"]):
         return "Emergency"
-    if any(k in text for k in ["pothole", "road", "bridge", "footpath"]):
+    if any(k in t for k in ["pothole", "road", "bridge", "footpath"]):
         return "Road & Infrastructure"
-    if any(k in text for k in ["water", "leak", "pipeline"]):
+    if any(k in t for k in ["water", "leak", "pipeline"]):
         return "Water Supply"
-    if any(k in text for k in ["drain", "sewage", "overflow"]):
+    if any(k in t for k in ["drain", "sewage", "overflow"]):
         return "Drainage & Sewage"
-    if any(k in text for k in ["garbage", "waste", "trash"]):
+    if any(k in t for k in ["garbage", "waste", "trash"]):
         return "Sanitation"
-    if any(k in text for k in ["electricity", "power", "transformer"]):
+    if any(k in t for k in ["electricity", "power", "transformer"]):
         return "Electricity"
-    if any(k in text for k in ["street light", "lamp post"]):
+    if any(k in t for k in ["street light", "lamp post"]):
         return "Street Lights"
-    if any(k in text for k in ["mosquito", "dengue", "fever"]):
+    if any(k in t for k in ["mosquito", "dengue", "fever"]):
         return "Health & Hygiene"
-    if any(k in text for k in ["dog", "stray", "cow"]):
+    if any(k in t for k in ["dog", "stray", "cow"]):
         return "Animal Control"
     return "General"
-
-
-def get_priority(text: str) -> str:
-    text = (text or "").lower()
-    high_keywords = ["accident", "fire", "hospital", "danger", "electrocution", "collapse"]
-    return "High" if any(w in text for w in high_keywords) else "Medium"
-
-
-def get_department(category: str) -> str:
-    mapping = {
-        "Road & Infrastructure": "roads",
-        "Water Supply": "water",
-        "Drainage & Sewage": "drainage",
-        "Sanitation": "sanitation",
-        "Electricity": "electricity",
-        "Street Lights": "streetlights",
-        "Health & Hygiene": "health",
-        "Animal Control": "animals",
-        "Emergency": "emergency",
-        "General": "general"
-    }
-    return mapping.get(category, "general")
-
 
 # ---------------- LANDING PAGE (User/Admin choice) ----------------
 @app.route("/")
