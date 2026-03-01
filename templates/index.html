@@ -3,29 +3,27 @@
 
 <head>
     <title>Civic AI Complaint System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <a href="/my-complaints">My Complaints</a>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <style>
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #4e73df, #1cc88a);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
         .container {
-            width: 100%;
-            max-width: 650px;
             background: white;
-            padding: 22px;
-            border-radius: 16px;
-            box-shadow: 0px 10px 28px rgba(0, 0, 0, 0.18);
-            margin-top: 30px;
+            padding: 30px;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: 0px 4px 22px rgba(0, 0, 0, 0.2);
         }
 
         .topbar {
@@ -34,26 +32,33 @@
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
         }
 
         .welcome {
-            font-weight: 900;
+            font-weight: 800;
             color: #111827;
-            font-size: 16px;
         }
 
-        .actions a {
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 800;
             text-decoration: none;
-            font-weight: 900;
-            padding: 10px 12px;
-            border-radius: 12px;
-            margin-left: 8px;
             display: inline-block;
+            text-align: center;
         }
 
-        .btn-dark {
-            background: #111827;
+        .btn-blue {
+            background: #2563eb;
             color: white;
         }
 
@@ -62,121 +67,118 @@
             color: white;
         }
 
-        .btn-blue {
-            background: #2563eb;
-            color: white;
-        }
-
-        h2 {
-            margin: 0 0 12px 0;
+        h1 {
+            margin: 8px 0 0;
             color: #111827;
         }
 
-        textarea,
-        input[type="file"] {
+        label {
+            font-weight: 800;
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            color: #111827;
+        }
+
+        textarea {
             width: 100%;
             padding: 12px;
             border-radius: 12px;
-            border: 1px solid #d1d5db;
+            border: 2px solid #111827;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .filebox {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .tip {
+            font-size: 12px;
+            color: #6b7280;
             margin-top: 8px;
-            box-sizing: border-box;
         }
 
-        button {
+        .submit {
             width: 100%;
-            background-color: #111827;
+            margin-top: 18px;
+            padding: 14px;
+            background: #111827;
             color: white;
-            border: none;
-            padding: 12px;
             border-radius: 12px;
-            cursor: pointer;
             font-weight: 900;
-            margin-top: 12px;
+            cursor: pointer;
+            border: none;
         }
 
-        button:hover {
-            opacity: 0.93;
+        .submit:hover {
+            opacity: 0.95;
         }
 
         .result {
-            margin-top: 16px;
-            padding: 12px;
+            margin-top: 18px;
+            padding: 14px;
             border-radius: 12px;
             background: #f3f4f6;
             font-weight: 800;
             color: #111827;
         }
 
-        .msg-green {
-            margin-top: 14px;
+        .msg {
+            margin-top: 12px;
             padding: 12px;
             border-radius: 12px;
-            background: #dcfce7;
-            font-weight: 900;
-            color: #166534;
-        }
-
-        .msg-red {
-            margin-top: 14px;
-            padding: 12px;
-            border-radius: 12px;
-            background: #fee2e2;
-            font-weight: 900;
-            color: #991b1b;
-        }
-
-        .hint {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #6b7280;
+            background: #ecfeff;
+            border: 1px solid #a5f3fc;
+            color: #0f172a;
+            font-weight: 700;
         }
     </style>
 </head>
 
 <body>
-
     <div class="container">
-
         <div class="topbar">
             <div class="welcome">Welcome, {{ username }}</div>
             <div class="actions">
-                <a class="btn-blue" href="/my-complaints">My Complaints</a>
-                <a class="btn-red" href="/logout">Logout</a>
+                <a class="btn btn-blue" href="/my-complaints">My Complaints</a>
+                <a class="btn btn-red" href="/logout">Logout</a>
             </div>
         </div>
 
-        <h2>AI Civic Complaint System</h2>
-
-        <form method="POST" enctype="multipart/form-data">
-            <label><b>Complaint Description</b></label>
-            <textarea name="complaint" rows="4" placeholder="Enter your complaint..." required></textarea>
-
-            <label style="display:block; margin-top:10px;"><b>Upload Proof Images (2)</b></label>
-            <input type="file" name="photo1" accept="image/*" required>
-            <input type="file" name="photo2" accept="image/*" required>
-
-            <div class="hint">Tip: Use clear photos for better verification.</div>
-
-            <button type="submit">Submit Complaint</button>
-        </form>
-
-        {% if error %}
-        <div class="msg-red">{{ error }}</div>
-        {% endif %}
+        <h1>AI Civic Complaint System</h1>
 
         {% if dept_message %}
-        <div class="msg-green">{{ dept_message }}</div>
+        <div class="msg">{{ dept_message }}</div>
         {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            <label>Complaint Description</label>
+            <textarea name="complaint" placeholder="Enter your complaint..." required></textarea>
+
+            <label>Upload Proof Images (2)</label>
+            <div class="filebox">
+                <input type="file" name="photo1" accept="image/*" required />
+            </div>
+            <div class="filebox">
+                <input type="file" name="photo2" accept="image/*" required />
+            </div>
+            <div class="tip">Tip: Use clear photos for better verification.</div>
+
+            <button class="submit" type="submit">Submit Complaint</button>
+        </form>
 
         {% if prediction %}
         <div class="result">
-            Category: <b>{{ prediction }}</b><br>
-            Priority: <b>{{ priority }}</b>
+            Predicted Category: {{ prediction }} <br />
+            Priority: {{ priority }}
         </div>
         {% endif %}
-
     </div>
-
 </body>
 
 </html>

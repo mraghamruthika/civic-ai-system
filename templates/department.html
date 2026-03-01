@@ -24,8 +24,8 @@
             align-items: center;
             color: #fff;
             margin-bottom: 20px;
-            gap: 12px;
             flex-wrap: wrap;
+            gap: 10px;
         }
 
         .btn {
@@ -95,7 +95,6 @@
             font-weight: 800;
             margin-right: 8px;
             color: #fff;
-            margin-top: 6px;
         }
 
         .cat {
@@ -130,17 +129,18 @@
             border: 1px solid #e5e7eb;
             margin-right: 10px;
             margin-top: 8px;
-            transition: transform .15s ease;
-        }
-
-        .images img:hover {
-            transform: scale(1.03);
         }
 
         .statusbox {
             margin-top: 12px;
             padding-top: 12px;
             border-top: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .statusrow {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
@@ -152,6 +152,15 @@
             border-radius: 10px;
             border: 1px solid #d1d5db;
             font-weight: 700;
+        }
+
+        input[type="file"],
+        input[type="text"] {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            width: 280px;
+            max-width: 100%;
         }
 
         button {
@@ -174,19 +183,51 @@
             font-size: 18px;
             margin-top: 50px;
         }
+
+        .warn {
+            background: #fee2e2;
+            color: #7f1d1d;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            border: 1px solid #fecaca;
+        }
+
+        .prooflink a {
+            font-weight: 800;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .prooflink a:hover {
+            text-decoration: underline;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 700;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
+
+        {% if session.get("status_error") %}
+        <div class="warn">{{ session.get("status_error") }}</div>
+        {% set _ = session.pop("status_error") %}
+        {% endif %}
+
         <div class="topbar">
             <div>
                 <h2>{{ dept_name }} Department Dashboard</h2>
                 <div style="opacity:0.9; margin-top:4px;">Admin: {{ admin_name }}</div>
             </div>
             <div>
-                <a class="btn btn-dark" href="/admin/dashboard">Admin Dashboard</a>
-                <a class="btn btn-red" href="/logout">Logout</a>
+                <a class="btn btn-dark" href="/admin">Admin Dashboard</a>
+                <a class="btn btn-red" href="/admin/logout">Logout</a>
             </div>
         </div>
 
@@ -228,17 +269,42 @@
 
                     <div class="meta">🕒 {{ c["created_at"] }}</div>
 
-                    <div class="statusbox">
-                        <b>Status:</b> {{ c["status"] }}
+                    {% if c["status_updated_at"] %}
+                    <div class="meta">✅ Updated: {{ c["status_updated_at"] }}</div>
+                    {% endif %}
 
-                        <form method="POST" action="/complaint/{{ c['id'] }}/status" style="margin:0;">
-                            <input type="hidden" name="next" value="/admin/dashboard">
-                            <select name="status">
-                                <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
-                                <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
-                                <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
-                            </select>
-                            <button type="submit">Update</button>
+                    {% if c["status_proof_path"] %}
+                    <div class="meta prooflink">
+                        📎 Proof: <a href="/{{ c['status_proof_path'] }}" target="_blank">View</a>
+                    </div>
+                    {% endif %}
+
+                    <div class="statusbox">
+                        <div class="statusrow">
+                            <b>Status:</b> {{ c["status"] }}
+                        </div>
+
+                        <form method="POST" action="/complaint/{{ c['id'] }}/status" enctype="multipart/form-data"
+                            style="margin:0;">
+                            <input type="hidden" name="next" value="/dept/{{ dept }}">
+
+                            <div class="statusrow">
+                                <select name="status" class="statusSelect" data-proof-id="proof_{{ c['id'] }}">
+                                    <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
+                                    <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
+                                    <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
+                                </select>
+
+                                <input type="text" name="note" placeholder="Admin note (optional)">
+
+                                <button type="submit">Update</button>
+                            </div>
+
+                            <!-- Proof (only required when Resolved) -->
+                            <div id="proof_{{ c['id'] }}" style="display:none;">
+                                <div class="hint">Proof required only for <b>Resolved</b> (upload image/pdf)</div>
+                                <input type="file" name="proof" accept="image/*,.pdf">
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -258,6 +324,29 @@
         <div class="empty">🚫 No complaints assigned to this department yet.</div>
         {% endif %}
     </div>
+
+    <script>
+        function toggleProof(selectEl) {
+            const proofBoxId = selectEl.getAttribute("data-proof-id");
+            const proofBox = document.getElementById(proofBoxId);
+            if (!proofBox) return;
+
+            if (selectEl.value === "Resolved") {
+                proofBox.style.display = "block";
+            } else {
+                proofBox.style.display = "none";
+                // clear file input
+                const inp = proofBox.querySelector('input[type="file"]');
+                if (inp) inp.value = "";
+            }
+        }
+
+        document.querySelectorAll(".statusSelect").forEach(sel => {
+            toggleProof(sel);
+            sel.addEventListener("change", () => toggleProof(sel));
+        });
+    </script>
+
 </body>
 
 </html>
