@@ -3,116 +3,88 @@
 
 <head>
     <title>Admin Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            height: 100vh;
-            background: linear-gradient(to right, #4e73df, #1cc88a);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+            padding: 20px;
         }
 
-        .container {
-            width: 460px;
-            max-width: 92%;
-            background: white;
-            padding: 28px;
+        .box {
+            background: #fff;
+            width: 100%;
+            max-width: 520px;
             border-radius: 16px;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+            padding: 26px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
         }
 
         h2 {
-            margin: 0 0 6px 0;
-            text-align: center;
+            margin: 0 0 6px;
+            color: #111827;
         }
 
-        p.sub {
-            margin: 0 0 16px 0;
-            text-align: center;
-            color: #555;
+        p {
+            margin: 0 0 18px;
+            color: #6b7280;
+            font-weight: 700;
         }
 
         label {
-            font-weight: 700;
-            display: block;
-            margin-top: 12px;
+            font-weight: 900;
+            color: #111827;
         }
 
-        input,
-        select {
+        input {
             width: 100%;
             padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
             margin-top: 6px;
-            outline: none;
+            margin-bottom: 12px;
+            font-weight: 700;
         }
 
         button {
             width: 100%;
-            margin-top: 18px;
             padding: 12px;
             border: none;
-            border-radius: 10px;
-            background: #4e73df;
-            color: white;
-            font-weight: 800;
+            border-radius: 12px;
+            background: #2563eb;
+            color: #fff;
+            font-weight: 900;
             cursor: pointer;
         }
 
         button:hover {
-            background: #2e59d9;
-        }
-
-        .msg {
-            color: #b00020;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .small {
-            text-align: center;
-            margin-top: 14px;
-            color: #555;
+            opacity: .92;
         }
 
         a {
-            color: #2e59d9;
-            font-weight: 700;
+            color: #2563eb;
+            font-weight: 900;
             text-decoration: none;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="box">
         <h2>Admin Registration</h2>
-        <p class="sub">Create admin account (email + verification OTP)</p>
-
-        {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+        <p>Register admin account (OTP verification demo)</p>
 
         <form method="POST">
             <label>Name</label>
             <input name="name" placeholder="Admin name" required>
 
-            <label>Department</label>
-            <select name="department" required>
-                <option value="roads">Roads</option>
-                <option value="water">Water</option>
-                <option value="drainage">Drainage</option>
-                <option value="sanitation">Sanitation</option>
-                <option value="electricity">Electricity</option>
-                <option value="streetlights">Street Lights</option>
-                <option value="health">Health</option>
-                <option value="animals">Animals</option>
-                <option value="emergency">Emergency</option>
-                <option value="general">General</option>
-            </select>
-
             <label>Email</label>
-            <input name="email" placeholder="admin@example.com" required>
+            <input type="email" name="email" placeholder="admin@example.com" required>
 
             <label>Password</label>
             <input type="password" name="password" placeholder="Create password" required>
@@ -120,8 +92,9 @@
             <button type="submit">Register</button>
         </form>
 
-        <div class="small">
-            Already registered? <a href="/admin/login">Admin Login</a> • <a href="/">Back</a>
+        <div style="margin-top:14px; text-align:center;">
+            Already registered? <a href="/admin/login">Login</a><br>
+            Back to <a href="/">Login choice</a>
         </div>
     </div>
 </body>

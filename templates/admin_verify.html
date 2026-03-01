@@ -2,92 +2,94 @@
 <html>
 
 <head>
-    <title>Admin Verification</title>
+    <title>Admin Verify</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            height: 100vh;
-            background: linear-gradient(to right, #4e73df, #1cc88a);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+            padding: 20px;
         }
 
-        .container {
-            width: 460px;
-            max-width: 92%;
-            background: white;
-            padding: 28px;
+        .box {
+            background: #fff;
+            width: 100%;
+            max-width: 420px;
             border-radius: 16px;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
-            text-align: center;
+            padding: 26px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+        }
+
+        h2 {
+            margin: 0 0 6px;
+            color: #111827;
+        }
+
+        p {
+            margin: 0 0 10px;
+            color: #6b7280;
+            font-weight: 700;
         }
 
         input {
             width: 100%;
             padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            margin-top: 10px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            margin-top: 6px;
+            margin-bottom: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
         }
 
         button {
             width: 100%;
-            margin-top: 14px;
             padding: 12px;
             border: none;
-            border-radius: 10px;
-            background: #1cc88a;
-            color: white;
-            font-weight: 800;
+            border-radius: 12px;
+            background: #111827;
+            color: #fff;
+            font-weight: 900;
             cursor: pointer;
         }
 
-        button:hover {
-            background: #17a673;
-        }
-
-        .msg {
-            color: #b00020;
-            margin-top: 10px;
-        }
-
-        .otp-demo {
-            margin-top: 10px;
+        .otp {
+            background: #ecfeff;
+            border: 1px solid #a5f3fc;
             padding: 10px;
-            border-radius: 10px;
-            background: #f6f7fb;
-            font-size: 13px;
-            color: #333;
+            border-radius: 12px;
+            font-weight: 900;
+            color: #0f172a;
+            margin-bottom: 10px;
         }
 
-        a {
-            color: #2e59d9;
-            font-weight: 700;
-            text-decoration: none;
+        .err {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 900;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h2>Admin OTP Verification</h2>
-        <p style="color:#555;margin-top:6px;">Enter the OTP to verify your admin account.</p>
+    <div class="box">
+        <h2>Verify Admin (OTP)</h2>
+        <p>Enter the OTP to activate admin account</p>
 
-        {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+        <div class="otp">Demo OTP: {{ otp_demo }}</div>
+        {% if msg %}<div class="err">{{ msg }}</div><br>{% endif %}
 
         <form method="POST">
-            <input name="otp" placeholder="Enter 6-digit OTP" required>
+            <input name="otp" placeholder="Enter OTP" required>
             <button type="submit">Verify</button>
         </form>
-
-        <!-- Demo OTP (since SMS/Email not integrated) -->
-        {% if otp_demo %}
-        <div class="otp-demo"><b>Demo OTP:</b> {{ otp_demo }}</div>
-        {% endif %}
-
-        <p style="margin-top:14px;"><a href="/">Back</a></p>
     </div>
 </body>
 
