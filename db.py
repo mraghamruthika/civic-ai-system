@@ -1,22 +1,20 @@
 import sqlite3
-from pathlib import Path
-from datetime import datetime
+import os
 
-DB_PATH = Path("complaints.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "complaints.db")
 
 
-def _conn():
+def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 
 def init_db():
-    conn = _conn()
-    cur = conn.cursor()
+    conn = get_db()
 
-    # Users table
-    cur.execute("""
+    # users
+    conn.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -27,8 +25,8 @@ def init_db():
     )
     """)
 
-    # Admins table (email-based)
-    cur.execute("""
+    # admins
+    conn.execute("""
     CREATE TABLE IF NOT EXISTS admins (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -38,24 +36,23 @@ def init_db():
     )
     """)
 
-    # Complaints table
-    cur.execute("""
+    # complaints
+    conn.execute("""
     CREATE TABLE IF NOT EXISTS complaints (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        address TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        complaint TEXT NOT NULL,
-        category TEXT NOT NULL,
-        priority TEXT NOT NULL,
-        assigned_department TEXT NOT NULL,
+        user_id INTEGER,
+        name TEXT,
+        address TEXT,
+        phone TEXT,
+        complaint TEXT,
+        category TEXT,
+        priority TEXT,
         photo1_path TEXT,
         photo2_path TEXT,
+        assigned_department TEXT,
         status TEXT DEFAULT 'Pending',
-        admin_proof TEXT DEFAULT '',
-        status_updated_at TEXT DEFAULT '',
-        created_at TEXT NOT NULL
+        admin_proof_path TEXT DEFAULT '',
+        created_at TEXT
     )
     """)
 
@@ -63,140 +60,138 @@ def init_db():
     conn.close()
 
 
-# ---------------- USER FUNCTIONS ----------------
-
+# ---------------- USERS ----------------
 def create_user(name, address, phone, password):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT OR REPLACE INTO users (name, address, phone, password, verified)
-        VALUES (?, ?, ?, ?, COALESCE((SELECT verified FROM users WHERE phone=?), 0))
-    """, (name, address, phone, password, phone))
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db()
+        # check existing
+        ex = conn.execute("SELECT id FROM users WHERE phone=?", (phone,)).fetchone()
+        if ex:
+            conn.close()
+            return False, "Phone already registered"
+        conn.execute(
+            "INSERT INTO users (name,address,phone,password,verified) VALUES (?,?,?,?,0)",
+            (name, address, phone, password)
+        )
+        conn.commit()
+        conn.close()
+        return True, None
+    except Exception as e:
+        return False, str(e)
 
 
 def get_user_by_phone(phone):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE phone=?", (phone,))
-    row = cur.fetchone()
+    conn = get_db()
+    row = conn.execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
     conn.close()
-    return row
+    return dict(row) if row else None
 
 
 def verify_user(phone):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET verified=1 WHERE phone=?", (phone,))
+    conn = get_db()
+    conn.execute("UPDATE users SET verified=1 WHERE phone=?", (phone,))
     conn.commit()
     conn.close()
 
 
-# ---------------- ADMIN FUNCTIONS ----------------
-
+# ---------------- ADMINS ----------------
 def create_admin(name, email, password):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT OR REPLACE INTO admins (name, email, password, verified)
-        VALUES (?, ?, ?, COALESCE((SELECT verified FROM admins WHERE email=?), 0))
-    """, (name, email, password, email))
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db()
+        ex = conn.execute("SELECT id FROM admins WHERE email=?", (email,)).fetchone()
+        if ex:
+            conn.close()
+            return False, "Email already registered"
+        conn.execute(
+            "INSERT INTO admins (name,email,password,verified) VALUES (?,?,?,0)",
+            (name, email, password)
+        )
+        conn.commit()
+        conn.close()
+        return True, None
+    except Exception as e:
+        return False, str(e)
 
 
 def get_admin_by_email(email):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM admins WHERE email=?", (email,))
-    row = cur.fetchone()
+    conn = get_db()
+    row = conn.execute("SELECT * FROM admins WHERE email=?", (email,)).fetchone()
     conn.close()
-    return row
+    return dict(row) if row else None
 
 
 def verify_admin(email):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE admins SET verified=1 WHERE email=?", (email,))
+    conn = get_db()
+    conn.execute("UPDATE admins SET verified=1 WHERE email=?", (email,))
     conn.commit()
     conn.close()
 
 
-# ---------------- COMPLAINT FUNCTIONS ----------------
-
+# ---------------- COMPLAINTS ----------------
 def insert_complaint(data: dict):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO complaints (
-            user_id, name, address, phone, complaint,
-            category, priority, assigned_department,
-            photo1_path, photo2_path,
-            status, admin_proof, status_updated_at,
-            created_at
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    conn = get_db()
+    conn.execute("""
+        INSERT INTO complaints
+        (user_id,name,address,phone,complaint,category,priority,photo1_path,photo2_path,
+         assigned_department,status,admin_proof_path,created_at)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
     """, (
-        data["user_id"],
-        data["name"],
-        data["address"],
-        data["phone"],
-        data["complaint"],
-        data["category"],
-        data["priority"],
-        data["assigned_department"],
-        data.get("photo1_path", ""),
-        data.get("photo2_path", ""),
+        data.get("user_id"),
+        data.get("name"),
+        data.get("address"),
+        data.get("phone"),
+        data.get("complaint"),
+        data.get("category"),
+        data.get("priority"),
+        data.get("photo1_path"),
+        data.get("photo2_path"),
+        data.get("assigned_department"),
         data.get("status", "Pending"),
-        data.get("admin_proof", ""),
-        data.get("status_updated_at", ""),
-        data["created_at"]
+        data.get("admin_proof_path", ""),
+        data.get("created_at")
     ))
     conn.commit()
     conn.close()
 
 
-def get_complaints_by_department(dept):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT * FROM complaints
-        WHERE assigned_department=?
-        ORDER BY id DESC
-    """, (dept,))
-    rows = cur.fetchall()
+def get_complaints_by_department(dept: str):
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM complaints WHERE assigned_department=? ORDER BY id DESC",
+        (dept,)
+    ).fetchall()
     conn.close()
-    return rows
+    return [dict(r) for r in rows]
 
 
-def get_complaints_by_user(user_id):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT * FROM complaints
-        WHERE user_id=?
-        ORDER BY id DESC
-    """, (user_id,))
-    rows = cur.fetchall()
+def get_complaints_by_user(user_id: int):
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM complaints WHERE user_id=? ORDER BY id DESC",
+        (user_id,)
+    ).fetchall()
     conn.close()
-    return rows
+    return [dict(r) for r in rows]
 
 
-def update_complaint_status(complaint_id, new_status, admin_proof):
-    conn = _conn()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE complaints
-        SET status=?,
-            admin_proof=?,
-            status_updated_at=?
-        WHERE id=?
-    """, (
-        new_status,
-        admin_proof,
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        complaint_id
-    ))
+def get_complaint_by_id(complaint_id: int):
+    conn = get_db()
+    row = conn.execute("SELECT * FROM complaints WHERE id=?", (complaint_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def update_complaint_status(complaint_id: int, status: str, admin_proof_path: str = ""):
+    conn = get_db()
+    if admin_proof_path:
+        conn.execute(
+            "UPDATE complaints SET status=?, admin_proof_path=? WHERE id=?",
+            (status, admin_proof_path, complaint_id)
+        )
+    else:
+        conn.execute(
+            "UPDATE complaints SET status=? WHERE id=?",
+            (status, complaint_id)
+        )
     conn.commit()
     conn.close()

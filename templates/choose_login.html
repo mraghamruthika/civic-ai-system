@@ -3,7 +3,7 @@
 
 <head>
     <title>Choose Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
             margin: 0;
@@ -17,46 +17,52 @@
         }
 
         .card {
-            background: #fff;
             width: 100%;
             max-width: 520px;
-            border-radius: 16px;
-            padding: 26px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
             text-align: center;
         }
 
         h1 {
-            margin: 0 0 6px;
+            margin: 0;
             color: #111827;
+            font-size: 26px;
+            font-weight: 900;
         }
 
         p {
-            margin: 0 0 18px;
-            color: #6b7280;
+            margin: 10px 0 22px;
+            color: #4b5563;
             font-weight: 700;
         }
 
-        .row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: center;
+        .btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
         }
 
         a {
             text-decoration: none;
-            font-weight: 900;
-            padding: 14px 18px;
-            border-radius: 14px;
-            display: inline-block;
-            min-width: 180px;
-            transition: transform .15s ease, box-shadow .15s ease;
         }
 
-        a:hover {
+        .btn {
+            display: block;
+            padding: 14px 14px;
+            border-radius: 14px;
+            font-weight: 900;
+            border: 2px solid transparent;
+            transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 26px rgba(0, 0, 0, .18);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+            opacity: .98;
         }
 
         .user {
@@ -68,20 +74,23 @@
             background: #111827;
             color: #fff;
         }
+
+        @media(max-width:520px) {
+            .btns {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="card">
         <h1>Civic AI Complaint System</h1>
-        <p>Select how you want to login</p>
-        <div class="row">
-            <a class="user" href="/login">User Login</a>
-            <a class="admin" href="/admin/login">Admin Login</a>
-        </div>
-        <div style="margin-top:18px; color:#6b7280; font-weight:700;">
-            New user? <a href="/register">Register</a> |
-            New admin? <a href="/admin/register">Register</a>
+        <p>Select your login type</p>
+
+        <div class="btns">
+            <a class="btn user" href="/login">User Login</a>
+            <a class="btn admin" href="/admin/login">Admin Login</a>
         </div>
     </div>
 </body>
