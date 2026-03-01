@@ -2,103 +2,77 @@
 <html>
 
 <head>
-    <title>Civic AI Complaint System</title>
+    <title>Choose Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            height: 100vh;
             background: linear-gradient(to right, #4e73df, #1cc88a);
+            min-height: 100vh;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #222;
+            padding: 20px;
         }
 
         .card {
-            width: 520px;
-            max-width: 92%;
             background: #fff;
-            padding: 28px;
-            border-radius: 16px;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+            width: 100%;
+            max-width: 520px;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
             text-align: center;
         }
 
-        .title {
-            font-size: 26px;
-            font-weight: 800;
-            margin-bottom: 8px;
+        h1 {
+            margin: 0 0 8px;
+            color: #111827;
         }
 
-        .sub {
-            color: #555;
-            margin-bottom: 22px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-top: 10px;
-        }
-
-        .box {
-            padding: 18px;
-            border-radius: 14px;
-            border: 1px solid #eee;
-            text-align: left;
-            transition: 0.2s;
-        }
-
-        .box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        p {
+            color: #6b7280;
+            margin: 0 0 18px;
         }
 
         .btn {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 10px 14px;
-            border-radius: 10px;
-            background: #4e73df;
-            color: #fff;
+            display: block;
+            padding: 14px;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: 700;
-            font-size: 14px;
+            font-weight: 900;
+            margin: 12px 0;
         }
 
-        .btn.green {
-            background: #1cc88a;
+        .user {
+            background: #2563eb;
+            color: #fff;
         }
 
-        .small {
-            color: #666;
-            font-size: 13px;
+        .admin {
+            background: #111827;
+            color: #fff;
+        }
+
+        .btn:hover {
+            opacity: .92;
         }
     </style>
 </head>
 
 <body>
     <div class="card">
-        <div class="title">Civic AI Complaint System</div>
-        <div class="sub">Choose how you want to login</div>
+        <h1>Civic AI Complaint System</h1>
+        <p>Select how you want to login</p>
 
-        <div class="grid">
-            <div class="box">
-                <h3 style="margin:0;">User</h3>
-                <p class="small">Register and submit complaints with photo proofs.</p>
-                <a class="btn green" href="/login">User Login</a>
-                <div class="small" style="margin-top:10px;">New user? <a href="/register">Register</a></div>
-            </div>
+        <a class="btn user" href="/login">User Login</a>
+        <a class="btn admin" href="/admin/login">Admin Login</a>
 
-            <div class="box">
-                <h3 style="margin:0;">Admin</h3>
-                <p class="small">Login with email to manage department complaints.</p>
-                <a class="btn" href="/admin/login">Admin Login</a>
-                <div class="small" style="margin-top:10px;">New admin? <a href="/admin/register">Register</a></div>
-            </div>
-        </div>
+        <p style="margin-top:18px;">
+            New user? <a href="/register">Register</a> |
+            New admin? <a href="/admin/register">Admin Register</a>
+        </p>
     </div>
 </body>
 

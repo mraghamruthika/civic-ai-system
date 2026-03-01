@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #111827;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 900;
+        }
+
+        .btn:hover {
+            opacity: .92;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            text-decoration: none;
+            color: #111827;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
+            font-weight: 900;
+            transition: transform .15s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .small {
+            font-weight: 700;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="top">
+            <div>
+                <h2 style="margin:0;">Admin Dashboard</h2>
+                <div style="opacity:.9;">Welcome, {{ admin_name }}</div>
+            </div>
+            <a class="btn" href="/admin/logout">Logout</a>
+        </div>
+
+        <div class="grid">
+            <a class="card" href="/dept/roads">Roads <div class="small">View road complaints</div></a>
+            <a class="card" href="/dept/water">Water <div class="small">View water complaints</div></a>
+            <a class="card" href="/dept/drainage">Drainage <div class="small">View drainage complaints</div></a>
+            <a class="card" href="/dept/sanitation">Sanitation <div class="small">View waste complaints</div></a>
+            <a class="card" href="/dept/electricity">Electricity <div class="small">View power issues</div></a>
+            <a class="card" href="/dept/streetlights">Streetlights <div class="small">View streetlight issues</div></a>
+            <a class="card" href="/dept/health">Health <div class="small">View health complaints</div></a>
+            <a class="card" href="/dept/animals">Animals <div class="small">View animal complaints</div></a>
+            <a class="card" href="/dept/emergency">Emergency <div class="small">View emergency complaints</div></a>
+            <a class="card" href="/dept/general">General <div class="small">View general complaints</div></a>
+        </div>
+    </div>
+</body>
+
+</html>

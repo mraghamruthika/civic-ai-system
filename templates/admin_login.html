@@ -3,107 +3,108 @@
 
 <head>
     <title>Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            height: 100vh;
             background: linear-gradient(to right, #4e73df, #1cc88a);
+            min-height: 100vh;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
-        .container {
-            width: 460px;
-            max-width: 92%;
-            background: white;
-            padding: 28px;
-            border-radius: 16px;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 520px;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
         }
 
         h2 {
-            margin: 0 0 6px 0;
+            margin: 0 0 8px;
+            color: #111827;
             text-align: center;
         }
 
-        p.sub {
-            margin: 0 0 16px 0;
+        .sub {
+            color: #6b7280;
             text-align: center;
-            color: #555;
+            margin: 0 0 18px;
         }
 
         label {
-            font-weight: 700;
+            font-weight: 800;
             display: block;
-            margin-top: 12px;
+            margin: 12px 0 6px;
         }
 
         input {
             width: 100%;
             padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            margin-top: 6px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            font-weight: 700;
         }
 
         button {
             width: 100%;
-            margin-top: 18px;
-            padding: 12px;
+            margin-top: 16px;
+            padding: 14px;
             border: none;
-            border-radius: 10px;
-            background: #4e73df;
-            color: white;
-            font-weight: 800;
+            border-radius: 12px;
+            background: #111827;
+            color: #fff;
+            font-weight: 900;
             cursor: pointer;
         }
 
         button:hover {
-            background: #2e59d9;
+            opacity: .92;
         }
 
         .msg {
-            color: #b00020;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .small {
-            text-align: center;
-            margin-top: 14px;
-            color: #555;
+            margin-top: 12px;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #7f1d1d;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 800;
         }
 
         a {
-            color: #2e59d9;
-            font-weight: 700;
-            text-decoration: none;
+            color: #2563eb;
+            font-weight: 800;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="card">
         <h2>Admin Login</h2>
-        <p class="sub">Login using registered email and password</p>
+        <p class="sub">Login using your registered email & password</p>
 
         {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
 
         <form method="POST">
             <label>Email</label>
-            <input name="email" placeholder="admin@example.com" required>
+            <input type="email" name="email" required placeholder="admin@gmail.com" />
 
             <label>Password</label>
-            <input type="password" name="password" placeholder="Enter password" required>
+            <input type="password" name="password" required placeholder="••••••••" />
 
             <button type="submit">Login</button>
         </form>
 
-        <div class="small">
-            New admin? <a href="/admin/register">Register</a> • <a href="/">Back</a>
-        </div>
+        <p style="text-align:center; margin-top:14px;">
+            New admin? <a href="/admin/register">Create account</a> |
+            <a href="/">Back</a>
+        </p>
     </div>
 </body>
 
