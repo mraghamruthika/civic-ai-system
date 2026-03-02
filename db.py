@@ -10,6 +10,11 @@ def get_db():
     return conn
 
 
+def _col_exists(conn, table, col):
+    rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
+    return any(r["name"] == col for r in rows)
+
+
 def init_db():
     conn = get_db()
 
@@ -50,11 +55,15 @@ def init_db():
         photo1_path TEXT,
         photo2_path TEXT,
         assigned_department TEXT,
-        status TEXT DEFAULT 'Pending',
-        admin_proof_path TEXT DEFAULT '',
         created_at TEXT
     )
     """)
+
+    # ---- MIGRATIONS (add missing columns safely) ----
+    if not _col_exists(conn, "complaints", "status"):
+        conn.execute("ALTER TABLE complaints ADD COLUMN status TEXT DEFAULT 'Pending'")
+    if not _col_exists(conn, "complaints", "admin_proof_path"):
+        conn.execute("ALTER TABLE complaints ADD COLUMN admin_proof_path TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()
@@ -62,22 +71,18 @@ def init_db():
 
 # ---------------- USERS ----------------
 def create_user(name, address, phone, password):
-    try:
-        conn = get_db()
-        # check existing
-        ex = conn.execute("SELECT id FROM users WHERE phone=?", (phone,)).fetchone()
-        if ex:
-            conn.close()
-            return False, "Phone already registered"
-        conn.execute(
-            "INSERT INTO users (name,address,phone,password,verified) VALUES (?,?,?,?,0)",
-            (name, address, phone, password)
-        )
-        conn.commit()
+    conn = get_db()
+    ex = conn.execute("SELECT id FROM users WHERE phone=?", (phone,)).fetchone()
+    if ex:
         conn.close()
-        return True, None
-    except Exception as e:
-        return False, str(e)
+        return False, "Phone already registered"
+    conn.execute(
+        "INSERT INTO users (name,address,phone,password,verified) VALUES (?,?,?,?,0)",
+        (name, address, phone, password)
+    )
+    conn.commit()
+    conn.close()
+    return True, None
 
 
 def get_user_by_phone(phone):
@@ -96,21 +101,18 @@ def verify_user(phone):
 
 # ---------------- ADMINS ----------------
 def create_admin(name, email, password):
-    try:
-        conn = get_db()
-        ex = conn.execute("SELECT id FROM admins WHERE email=?", (email,)).fetchone()
-        if ex:
-            conn.close()
-            return False, "Email already registered"
-        conn.execute(
-            "INSERT INTO admins (name,email,password,verified) VALUES (?,?,?,0)",
-            (name, email, password)
-        )
-        conn.commit()
+    conn = get_db()
+    ex = conn.execute("SELECT id FROM admins WHERE email=?", (email,)).fetchone()
+    if ex:
         conn.close()
-        return True, None
-    except Exception as e:
-        return False, str(e)
+        return False, "Email already registered"
+    conn.execute(
+        "INSERT INTO admins (name,email,password,verified) VALUES (?,?,?,0)",
+        (name, email, password)
+    )
+    conn.commit()
+    conn.close()
+    return True, None
 
 
 def get_admin_by_email(email):
@@ -154,16 +156,6 @@ def insert_complaint(data: dict):
     conn.close()
 
 
-def get_complaints_by_department(dept: str):
-    conn = get_db()
-    rows = conn.execute(
-        "SELECT * FROM complaints WHERE assigned_department=? ORDER BY id DESC",
-        (dept,)
-    ).fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
-
-
 def get_complaints_by_user(user_id: int):
     conn = get_db()
     rows = conn.execute(
@@ -174,11 +166,14 @@ def get_complaints_by_user(user_id: int):
     return [dict(r) for r in rows]
 
 
-def get_complaint_by_id(complaint_id: int):
+def get_complaints_by_department(dept: str):
     conn = get_db()
-    row = conn.execute("SELECT * FROM complaints WHERE id=?", (complaint_id,)).fetchone()
+    rows = conn.execute(
+        "SELECT * FROM complaints WHERE assigned_department=? ORDER BY id DESC",
+        (dept,)
+    ).fetchall()
     conn.close()
-    return dict(row) if row else None
+    return [dict(r) for r in rows]
 
 
 def update_complaint_status(complaint_id: int, status: str, admin_proof_path: str = ""):

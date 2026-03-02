@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #4e73df, #1cc88a);
-            margin: 0;
+            min-height: 100vh;
             padding: 20px;
         }
 
-        .wrap {
+        .container {
             max-width: 1100px;
             margin: auto;
         }
@@ -23,76 +24,40 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 18px;
             color: white;
-        }
-
-        .title {
-            font-size: 22px;
-            font-weight: 900;
+            margin-bottom: 18px;
         }
 
         .btn {
-            padding: 10px 14px;
-            border-radius: 10px;
             text-decoration: none;
-            font-weight: 800;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 900;
             display: inline-block;
-            border: 0;
-            cursor: pointer;
         }
 
         .btn-dark {
             background: #111827;
-            color: #fff;
+            color: white;
         }
 
         .btn-red {
             background: #ef4444;
-            color: #fff;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 12px;
-            margin-bottom: 18px;
-        }
-
-        .stat {
-            background: rgba(255, 255, 255, 0.92);
-            border-radius: 14px;
-            padding: 14px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
-        }
-
-        .stat .num {
-            font-size: 22px;
-            font-weight: 900;
-            color: #111827;
-        }
-
-        .stat .lbl {
-            font-size: 12px;
-            font-weight: 800;
-            color: #6b7280;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
+            color: white;
         }
 
         .card {
             background: white;
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 18px;
             margin-bottom: 14px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+            transition: transform .12s ease, box-shadow .12s ease;
         }
 
         .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
         }
 
         .row {
@@ -107,30 +72,24 @@
             min-width: 260px;
         }
 
-        .idline {
-            font-weight: 900;
-            color: #111827;
-        }
-
         .meta {
             color: #4b5563;
-            font-size: 13px;
-            margin-top: 6px;
+            font-size: 14px;
+            margin: 8px 0;
         }
 
         .tags {
-            margin-top: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            margin: 10px 0;
         }
 
         .tag {
+            display: inline-block;
             padding: 6px 10px;
             border-radius: 999px;
             font-size: 12px;
             font-weight: 900;
-            color: white;
+            margin-right: 8px;
+            color: #fff;
         }
 
         .cat {
@@ -146,21 +105,21 @@
             color: #111;
         }
 
-        .pending {
+        .status-pending {
             background: #6b7280;
         }
 
-        .progress {
+        .status-progress {
             background: #f59e0b;
             color: #111;
         }
 
-        .resolved {
+        .status-resolved {
             background: #22c55e;
         }
 
         .images img {
-            width: 190px;
+            width: 180px;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
             margin-right: 10px;
@@ -171,41 +130,22 @@
             color: white;
             text-align: center;
             font-size: 18px;
-            margin-top: 60px;
-            font-weight: 800;
+            margin-top: 50px;
+            font-weight: 900;
         }
     </style>
 </head>
 
 <body>
-    <div class="wrap">
+    <div class="container">
         <div class="topbar">
             <div>
-                <div class="title">My Complaints</div>
-                <div style="opacity:0.9; font-weight:700;">User: {{ username }}</div>
+                <h2 style="margin:0;">My Complaints</h2>
+                <div style="opacity:.9; margin-top:4px;">User: {{ username }}</div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <a class="btn btn-dark" href="/home">Back to Home</a>
+            <div>
+                <a class="btn btn-dark" href="/home">Back</a>
                 <a class="btn btn-red" href="/logout">Logout</a>
-            </div>
-        </div>
-
-        <div class="stats">
-            <div class="stat">
-                <div class="num">{{ counts.total }}</div>
-                <div class="lbl">Total</div>
-            </div>
-            <div class="stat">
-                <div class="num">{{ counts.pending }}</div>
-                <div class="lbl">Pending</div>
-            </div>
-            <div class="stat">
-                <div class="num">{{ counts.progress }}</div>
-                <div class="lbl">In Progress</div>
-            </div>
-            <div class="stat">
-                <div class="num">{{ counts.resolved }}</div>
-                <div class="lbl">Resolved</div>
             </div>
         </div>
 
@@ -214,10 +154,16 @@
         <div class="card">
             <div class="row">
                 <div class="col">
-                    <div class="idline">Complaint #{{ c["id"] }}</div>
-                    <div class="meta">🕒 Submitted: {{ c["created_at"] }}</div>
+                    <div style="font-size:16px; font-weight:900; color:#111827;">
+                        Complaint #{{ c["id"] }}
+                    </div>
 
-                    <div style="margin-top:10px; font-weight:800; color:#111827;">
+                    <div class="meta">
+                        📍 {{ c["address"] }}<br />
+                        🕒 {{ c["created_at"] }}
+                    </div>
+
+                    <div style="font-size:15px; font-weight:800; margin-top:8px;">
                         {{ c["complaint"] }}
                     </div>
 
@@ -231,30 +177,29 @@
                         {% endif %}
 
                         {% if c["status"] == "Pending" %}
-                        <span class="tag pending">Pending</span>
+                        <span class="tag status-pending">Pending</span>
                         {% elif c["status"] == "In Progress" %}
-                        <span class="tag progress">In Progress</span>
+                        <span class="tag status-progress">In Progress</span>
                         {% else %}
-                        <span class="tag resolved">Resolved</span>
+                        <span class="tag status-resolved">Resolved</span>
                         {% endif %}
-
-                        <span class="tag cat">Dept: {{ c["assigned_department"]|upper }}</span>
                     </div>
+
+                    {% if c.get("admin_proof_path") %}
+                    <div class="meta"><b>Admin Proof:</b> <a href="/{{ c['admin_proof_path'] }}"
+                            target="_blank">View</a></div>
+                    {% endif %}
                 </div>
 
                 <div class="col images">
-                    {% if c["photo1_path"] %}
-                    <img src="{{ url_for('static', filename=c['photo1_path']) }}" alt="Photo 1">
-                    {% endif %}
-                    {% if c["photo2_path"] %}
-                    <img src="{{ url_for('static', filename=c['photo2_path']) }}" alt="Photo 2">
-                    {% endif %}
+                    {% if c["photo1_path"] %}<img src="/{{ c['photo1_path'] }}" alt="Photo 1">{% endif %}
+                    {% if c["photo2_path"] %}<img src="/{{ c['photo2_path'] }}" alt="Photo 2">{% endif %}
                 </div>
             </div>
         </div>
         {% endfor %}
         {% else %}
-        <div class="empty">🚫 No complaints submitted yet.</div>
+        <div class="empty">🚫 No complaints yet.</div>
         {% endif %}
     </div>
 </body>
