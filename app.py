@@ -9,7 +9,7 @@ from db import (
     create_user, get_user_by_phone, verify_user,
     # complaints
     insert_complaint, get_complaints_by_department, get_complaints_by_user,
-    update_complaint_status, get_complaint_by_id,
+    update_complaint_status,
     # admin
     create_admin, get_admin_by_email, verify_admin
 )

@@ -11,10 +11,10 @@ def get_db():
     return conn
 
 
-def _column_exists(conn, table_name, column_name) -> bool:
+def _column_exists(conn, table_name, column_name):
     cur = conn.cursor()
     cur.execute(f"PRAGMA table_info({table_name})")
-    cols = [row["name"] for row in cur.fetchall()]
+    cols = [row[1] for row in cur.fetchall()]
     return column_name in cols
 
 
@@ -22,7 +22,7 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
-    # ---------------- USERS ----------------
+    # USERS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,18 +34,23 @@ def init_db():
     )
     """)
 
-    # ---------------- ADMINS ----------------
+    # ADMINS (now includes department)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS admins (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         email TEXT UNIQUE,
         password TEXT,
+        department TEXT,
         verified INTEGER DEFAULT 0
     )
     """)
 
-    # ---------------- COMPLAINTS ----------------
+    # Auto-migrate old DB if department column missing
+    if not _column_exists(conn, "admins", "department"):
+        cursor.execute("ALTER TABLE admins ADD COLUMN department TEXT")
+
+    # COMPLAINTS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS complaints (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,13 +69,6 @@ def init_db():
         admin_proof_path TEXT DEFAULT ''
     )
     """)
-
-    # --- Auto-migration (in case old DB doesn't have new columns) ---
-    if not _column_exists(conn, "complaints", "status"):
-        cursor.execute("ALTER TABLE complaints ADD COLUMN status TEXT DEFAULT 'Pending'")
-
-    if not _column_exists(conn, "complaints", "admin_proof_path"):
-        cursor.execute("ALTER TABLE complaints ADD COLUMN admin_proof_path TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()
@@ -115,7 +113,7 @@ def verify_user(phone):
 
 # ---------------- ADMINS ----------------
 
-def create_admin(name, email, password):
+def create_admin(name, email, password, department):
     conn = get_db()
     cursor = conn.cursor()
 
@@ -125,8 +123,8 @@ def create_admin(name, email, password):
         return False, "Email already registered"
 
     cursor.execute(
-        "INSERT INTO admins (name,email,password,verified) VALUES (?,?,?,0)",
-        (name, email, password)
+        "INSERT INTO admins (name,email,password,department,verified) VALUES (?,?,?,?,0)",
+        (name, email, password, department)
     )
 
     conn.commit()
@@ -201,10 +199,7 @@ def get_complaints_by_department(dept):
 
 def get_complaint_by_id(complaint_id):
     conn = get_db()
-    row = conn.execute(
-        "SELECT * FROM complaints WHERE id=?",
-        (complaint_id,)
-    ).fetchone()
+    row = conn.execute("SELECT * FROM complaints WHERE id=?", (complaint_id,)).fetchone()
     conn.close()
     return dict(row) if row else None
 

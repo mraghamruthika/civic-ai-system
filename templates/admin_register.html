@@ -3,26 +3,26 @@
 
 <head>
     <title>Admin Registration</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #4e73df, #1cc88a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
         }
 
         .box {
             background: #fff;
             width: 100%;
-            max-width: 520px;
-            border-radius: 16px;
+            max-width: 420px;
             padding: 26px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         h2 {
@@ -30,45 +30,63 @@
             color: #111827;
         }
 
-        p {
-            margin: 0 0 18px;
+        .sub {
             color: #6b7280;
             font-weight: 700;
+            margin-bottom: 14px;
         }
 
         label {
-            font-weight: 900;
+            display: block;
+            margin-top: 12px;
+            font-weight: 800;
             color: #111827;
         }
 
-        input {
+        input,
+        select {
             width: 100%;
             padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #d1d5db;
             margin-top: 6px;
-            margin-bottom: 12px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
             font-weight: 700;
         }
 
         button {
             width: 100%;
+            margin-top: 18px;
             padding: 12px;
-            border: none;
+            border: 0;
             border-radius: 12px;
-            background: #2563eb;
+            background: #111827;
             color: #fff;
             font-weight: 900;
             cursor: pointer;
         }
 
         button:hover {
-            opacity: .92;
+            opacity: .95;
         }
 
-        a {
+        .msg {
+            background: #ecfeff;
+            border: 1px solid #a5f3fc;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .links {
+            margin-top: 14px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .links a {
             color: #2563eb;
-            font-weight: 900;
             text-decoration: none;
         }
     </style>
@@ -77,24 +95,42 @@
 <body>
     <div class="box">
         <h2>Admin Registration</h2>
-        <p>Register admin account (OTP verification demo)</p>
+        <div class="sub">Register and verify with OTP</div>
+
+        {% if msg %}
+        <div class="msg">{{ msg }}</div>
+        {% endif %}
 
         <form method="POST">
             <label>Name</label>
-            <input name="name" placeholder="Admin name" required>
+            <input name="name" placeholder="Enter your name" required />
 
             <label>Email</label>
-            <input type="email" name="email" placeholder="admin@example.com" required>
+            <input type="email" name="email" placeholder="Enter your email" required />
 
             <label>Password</label>
-            <input type="password" name="password" placeholder="Create password" required>
+            <input type="password" name="password" placeholder="Create password" required />
+
+            <label>Department</label>
+            <select name="department" required>
+                <option value="" disabled selected>Select your department</option>
+                <option value="roads">Roads</option>
+                <option value="water">Water Supply</option>
+                <option value="drainage">Drainage & Sewage</option>
+                <option value="sanitation">Sanitation</option>
+                <option value="electricity">Electricity</option>
+                <option value="streetlights">Street Lights</option>
+                <option value="health">Health & Hygiene</option>
+                <option value="animals">Animal Control</option>
+                <option value="emergency">Emergency</option>
+                <option value="general">General</option>
+            </select>
 
             <button type="submit">Register</button>
         </form>
 
-        <div style="margin-top:14px; text-align:center;">
-            Already registered? <a href="/admin/login">Login</a><br>
-            Back to <a href="/">Login choice</a>
+        <div class="links">
+            Already have an account? <a href="/admin/login">Admin Login</a>
         </div>
     </div>
 </body>
