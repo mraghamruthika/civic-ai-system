@@ -11,10 +11,9 @@ def get_db():
     return conn
 
 
-def _column_exists(conn, table_name, column_name):
-    cur = conn.cursor()
-    cur.execute(f"PRAGMA table_info({table_name})")
-    cols = [row[1] for row in cur.fetchall()]
+def _column_exists(conn, table_name: str, column_name: str) -> bool:
+    cur = conn.execute(f"PRAGMA table_info({table_name})")
+    cols = [row["name"] for row in cur.fetchall()]
     return column_name in cols
 
 
@@ -34,21 +33,17 @@ def init_db():
     )
     """)
 
-    # ADMINS (now includes department)
+    # ADMINS (with department)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS admins (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         email TEXT UNIQUE,
         password TEXT,
-        department TEXT,
+        department TEXT DEFAULT 'general',
         verified INTEGER DEFAULT 0
     )
     """)
-
-    # Auto-migrate old DB if department column missing
-    if not _column_exists(conn, "admins", "department"):
-        cursor.execute("ALTER TABLE admins ADD COLUMN department TEXT")
 
     # COMPLAINTS
     cursor.execute("""
@@ -69,6 +64,15 @@ def init_db():
         admin_proof_path TEXT DEFAULT ''
     )
     """)
+
+    # ---- Safe migrations (for older DBs) ----
+    # Add admins.department if missing
+    if not _column_exists(conn, "admins", "department"):
+        conn.execute("ALTER TABLE admins ADD COLUMN department TEXT DEFAULT 'general'")
+
+    # Add complaints.admin_proof_path if missing
+    if not _column_exists(conn, "complaints", "admin_proof_path"):
+        conn.execute("ALTER TABLE complaints ADD COLUMN admin_proof_path TEXT DEFAULT ''")
 
     conn.commit()
     conn.close()
@@ -113,7 +117,7 @@ def verify_user(phone):
 
 # ---------------- ADMINS ----------------
 
-def create_admin(name, email, password, department):
+def create_admin(name, email, password, department="general"):
     conn = get_db()
     cursor = conn.cursor()
 

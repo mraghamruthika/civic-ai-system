@@ -231,8 +231,8 @@ def admin_register():
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
-
-        ok, err = create_admin(name, email, password)
+        department = request.form.get("department", "general")
+        ok, err = create_admin(name, email, password, department)
         if not ok:
             msg = err or "Admin registration failed"
             return render_template("admin_register.html", msg=msg)
@@ -275,7 +275,8 @@ def admin_login():
             session["admin_id"] = admin["id"]
             session["admin_name"] = admin["name"]
             session["admin_email"] = admin["email"]
-            return redirect(url_for("admin_dashboard"))
+            session["admin_department"] = admin.get("department", "general")
+            return redirect(url_for("dept_dashboard", dept=session["admin_department"]))
         else:
             msg = "Invalid admin credentials / not verified"
 
