@@ -10,7 +10,7 @@ from db import (
     create_user, get_user_by_phone, verify_user,
     # complaints
     insert_complaint, get_complaints_by_department, get_complaints_by_user,
-    update_complaint_status,
+    update_complaint_status, get_complaint_by_id,
     # admin
     create_admin, get_admin_by_email, verify_admin
 )
@@ -24,27 +24,27 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 init_db()
 
-# ---------------- AI LOGIC (simple keywords) ----------------
+# ---------------- AI LOGIC (simple) ----------------
 def get_category(text: str) -> str:
     text = (text or "").lower()
 
-    if any(k in text for k in ["fire", "accident", "blast", "electrocution", "collapse", "gas leak"]):
+    if any(k in text for k in ["fire", "accident", "blast", "electrocution", "collapse"]):
         return "Emergency"
-    if any(k in text for k in ["pothole", "road", "bridge", "footpath", "manhole", "pavement"]):
+    if any(k in text for k in ["pothole", "road", "bridge", "footpath"]):
         return "Road & Infrastructure"
-    if any(k in text for k in ["water", "leak", "pipeline", "tap", "pressure"]):
+    if any(k in text for k in ["water", "leak", "pipeline"]):
         return "Water Supply"
-    if any(k in text for k in ["drain", "sewage", "overflow", "stagnant"]):
+    if any(k in text for k in ["drain", "sewage", "overflow"]):
         return "Drainage & Sewage"
-    if any(k in text for k in ["garbage", "waste", "trash", "dustbin"]):
+    if any(k in text for k in ["garbage", "waste", "trash"]):
         return "Sanitation"
-    if any(k in text for k in ["electricity", "power", "transformer", "voltage", "wire"]):
+    if any(k in text for k in ["electricity", "power", "transformer"]):
         return "Electricity"
-    if any(k in text for k in ["street light", "lamp post", "streetlights", "flickering"]):
+    if any(k in text for k in ["street light", "lamp post", "streetlight"]):
         return "Street Lights"
-    if any(k in text for k in ["mosquito", "dengue", "fever", "hygiene", "toilet"]):
+    if any(k in text for k in ["mosquito", "dengue", "fever"]):
         return "Health & Hygiene"
-    if any(k in text for k in ["dog", "stray", "cow", "animal"]):
+    if any(k in text for k in ["dog", "stray", "cow"]):
         return "Animal Control"
 
     return "General"
@@ -52,7 +52,7 @@ def get_category(text: str) -> str:
 
 def get_priority(text: str) -> str:
     text = (text or "").lower()
-    high_keywords = ["accident", "fire", "hospital", "danger", "electrocution", "collapse", "gas leak", "open manhole"]
+    high_keywords = ["accident", "fire", "hospital", "danger", "electrocution", "collapse"]
     return "High" if any(w in text for w in high_keywords) else "Medium"
 
 
@@ -96,6 +96,7 @@ def register():
         otp = str(random.randint(100000, 999999))
         session["user_otp"] = otp
         session["user_otp_phone"] = phone
+
         return redirect(url_for("verify_user_otp"))
 
     return render_template("register.html", msg=msg)
@@ -160,7 +161,7 @@ def home():
         photo1 = request.files.get("photo1")
         photo2 = request.files.get("photo2")
 
-        if not photo1 or not photo2:
+        if not photo1 or not photo2 or not photo1.filename or not photo2.filename:
             dept_message = "Please upload both proof images."
             return render_template(
                 "index.html",
@@ -228,9 +229,8 @@ def admin_register():
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
-        department = request.form.get("department", "general")  # if your admin_register has department dropdown
 
-        ok, err = create_admin(name, email, password, department)
+        ok, err = create_admin(name, email, password)
         if not ok:
             msg = err or "Admin registration failed"
             return render_template("admin_register.html", msg=msg)
@@ -272,10 +272,7 @@ def admin_login():
             session["admin_id"] = admin["id"]
             session["admin_name"] = admin["name"]
             session["admin_email"] = admin["email"]
-            session["admin_department"] = admin.get("department", "general")
-
-            # Send admin directly to their department dashboard
-            return redirect(url_for("dept_dashboard", dept=session["admin_department"]))
+            return redirect(url_for("admin_dashboard"))
         else:
             msg = "Invalid admin credentials / not verified"
 
@@ -287,11 +284,10 @@ def admin_logout():
     session.pop("admin_id", None)
     session.pop("admin_name", None)
     session.pop("admin_email", None)
-    session.pop("admin_department", None)
     return redirect(url_for("choose_login"))
 
 
-# Optional admin landing page (keep)
+# ---------------- ADMIN DASHBOARD ----------------
 @app.route("/admin")
 def admin_dashboard():
     if "admin_id" not in session:
@@ -312,28 +308,31 @@ def dept_dashboard(dept):
         complaints=complaints,
         dept_name=dept_name,
         dept=dept,
-        admin_name=session.get("admin_name")
+        admin_name=session.get("admin_name"),
+        err=request.args.get("err")
     )
 
 
-# ✅ Proof required for In Progress / Resolved
+# ---------------- STATUS UPDATE (WITH PROOF RULES) ----------------
 @app.route("/complaint/<int:complaint_id>/status", methods=["POST"])
 def complaint_status_update(complaint_id):
     if "admin_id" not in session:
         return redirect(url_for("admin_login"))
 
-    status = request.form.get("status", "Pending")
+    status = request.form.get("status", "Pending").strip()
     next_url = request.form.get("next", "/admin")
+
+    def add_err(url, code):
+        if "?" in url:
+            return f"{url}&err={code}"
+        return f"{url}?err={code}"
 
     proof = request.files.get("proof")
 
-    # Require proof for In Progress & Resolved
+    # Proof required only for these statuses
     if status in ["In Progress", "Resolved"]:
         if not proof or not proof.filename:
-            # Redirect back with error flag
-            if "?" in next_url:
-                return redirect(next_url + "&err=proof_required")
-            return redirect(next_url + "?err=proof_required")
+            return redirect(add_err(next_url, "proof_required"))
 
     proof_path = ""
     if proof and proof.filename:
