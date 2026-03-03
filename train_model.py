@@ -1,57 +1,36 @@
-import csv
-from pathlib import Path
-
+import pandas as pd
 import joblib
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
-from sklearn.svm import LinearSVC
+from sklearn.metrics import classification_report
 
+df = pd.read_csv("dataset.csv")
 
-DATASET_PATH = Path("dataset.csv")
-MODEL_PATH = Path("model.pkl")
+X = df["complaint"]
+y = df["category"]
 
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-def load_dataset(path: Path):
-    if not path.exists():
-        raise FileNotFoundError(f"{path} not found. Create dataset.csv first.")
+model = Pipeline([
+    ("tfidf", TfidfVectorizer(
+        stop_words="english",
+        ngram_range=(1,2),
+        max_features=5000
+    )),
+    ("clf", LogisticRegression(max_iter=1000))
+])
 
-    texts, labels = [], []
-    with path.open("r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        if "text" not in reader.fieldnames or "category" not in reader.fieldnames:
-            raise ValueError("dataset.csv must contain headers: text,category")
+model.fit(X_train, y_train)
 
-        for row in reader:
-            t = (row.get("text") or "").strip()
-            y = (row.get("category") or "").strip()
-            if t and y:
-                texts.append(t)
-                labels.append(y)
+y_pred = model.predict(X_test)
 
-    if len(texts) < 10:
-        raise ValueError("Add at least 10+ rows in dataset.csv for a meaningful model.")
+print("\nModel Accuracy Report:\n")
+print(classification_report(y_test, y_pred))
 
-    return texts, labels
+joblib.dump(model, "model.pkl")
 
-
-def main():
-    texts, labels = load_dataset(DATASET_PATH)
-
-    # Pipeline = TF-IDF + Linear SVM (works great for text classification)
-    pipeline = Pipeline([
-        ("tfidf", TfidfVectorizer(
-            lowercase=True,
-            ngram_range=(1, 2),
-            max_features=5000
-        )),
-        ("clf", LinearSVC())
-    ])
-
-    pipeline.fit(texts, labels)
-
-    joblib.dump(pipeline, MODEL_PATH)
-    print(f"✅ Model trained and saved to {MODEL_PATH} (rows={len(texts)})")
-
-
-if __name__ == "__main__":
-    main()
+print("\n✅ Model trained and saved as model.pkl")

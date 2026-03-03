@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, redirect, url_for, session
 import os
 from datetime import datetime
 import random
+from werkzeug.utils import secure_filename
 
 from db import (
     init_db,
@@ -23,27 +24,27 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 init_db()
 
-# ---------------- AI LOGIC (simple) ----------------
+# ---------------- AI LOGIC (simple keywords) ----------------
 def get_category(text: str) -> str:
     text = (text or "").lower()
 
-    if any(k in text for k in ["fire", "accident", "blast", "electrocution", "collapse"]):
+    if any(k in text for k in ["fire", "accident", "blast", "electrocution", "collapse", "gas leak"]):
         return "Emergency"
-    if any(k in text for k in ["pothole", "road", "bridge", "footpath"]):
+    if any(k in text for k in ["pothole", "road", "bridge", "footpath", "manhole", "pavement"]):
         return "Road & Infrastructure"
-    if any(k in text for k in ["water", "leak", "pipeline"]):
+    if any(k in text for k in ["water", "leak", "pipeline", "tap", "pressure"]):
         return "Water Supply"
-    if any(k in text for k in ["drain", "sewage", "overflow"]):
+    if any(k in text for k in ["drain", "sewage", "overflow", "stagnant"]):
         return "Drainage & Sewage"
-    if any(k in text for k in ["garbage", "waste", "trash"]):
+    if any(k in text for k in ["garbage", "waste", "trash", "dustbin"]):
         return "Sanitation"
-    if any(k in text for k in ["electricity", "power", "transformer"]):
+    if any(k in text for k in ["electricity", "power", "transformer", "voltage", "wire"]):
         return "Electricity"
-    if any(k in text for k in ["street light", "lamp post"]):
+    if any(k in text for k in ["street light", "lamp post", "streetlights", "flickering"]):
         return "Street Lights"
-    if any(k in text for k in ["mosquito", "dengue", "fever"]):
+    if any(k in text for k in ["mosquito", "dengue", "fever", "hygiene", "toilet"]):
         return "Health & Hygiene"
-    if any(k in text for k in ["dog", "stray", "cow"]):
+    if any(k in text for k in ["dog", "stray", "cow", "animal"]):
         return "Animal Control"
 
     return "General"
@@ -51,7 +52,7 @@ def get_category(text: str) -> str:
 
 def get_priority(text: str) -> str:
     text = (text or "").lower()
-    high_keywords = ["accident", "fire", "hospital", "danger", "electrocution", "collapse"]
+    high_keywords = ["accident", "fire", "hospital", "danger", "electrocution", "collapse", "gas leak", "open manhole"]
     return "High" if any(w in text for w in high_keywords) else "Medium"
 
 
@@ -87,17 +88,14 @@ def register():
         phone = request.form.get("phone")
         password = request.form.get("password")
 
-        # Create user (verified=0 by default)
         ok, err = create_user(name, address, phone, password)
         if not ok:
             msg = err or "Registration failed"
             return render_template("register.html", msg=msg)
 
-        # OTP demo (stored in session)
         otp = str(random.randint(100000, 999999))
         session["user_otp"] = otp
         session["user_otp_phone"] = phone
-
         return redirect(url_for("verify_user_otp"))
 
     return render_template("register.html", msg=msg)
@@ -173,9 +171,8 @@ def home():
             )
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-        filename1 = f"{timestamp}_1_{photo1.filename}"
-        filename2 = f"{timestamp}_2_{photo2.filename}"
+        filename1 = f"{timestamp}_1_{secure_filename(photo1.filename)}"
+        filename2 = f"{timestamp}_2_{secure_filename(photo2.filename)}"
 
         photo1_path = os.path.join(app.config["UPLOAD_FOLDER"], filename1).replace("\\", "/")
         photo2_path = os.path.join(app.config["UPLOAD_FOLDER"], filename2).replace("\\", "/")
@@ -231,7 +228,8 @@ def admin_register():
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
-        department = request.form.get("department", "general")
+        department = request.form.get("department", "general")  # if your admin_register has department dropdown
+
         ok, err = create_admin(name, email, password, department)
         if not ok:
             msg = err or "Admin registration failed"
@@ -271,11 +269,12 @@ def admin_login():
 
         admin = get_admin_by_email(email)
         if admin and admin["password"] == password and admin["verified"] == 1:
-            # store admin session
             session["admin_id"] = admin["id"]
             session["admin_name"] = admin["name"]
             session["admin_email"] = admin["email"]
             session["admin_department"] = admin.get("department", "general")
+
+            # Send admin directly to their department dashboard
             return redirect(url_for("dept_dashboard", dept=session["admin_department"]))
         else:
             msg = "Invalid admin credentials / not verified"
@@ -285,14 +284,14 @@ def admin_login():
 
 @app.route("/admin/logout")
 def admin_logout():
-    # remove only admin keys
     session.pop("admin_id", None)
     session.pop("admin_name", None)
     session.pop("admin_email", None)
+    session.pop("admin_department", None)
     return redirect(url_for("choose_login"))
 
 
-# ---------------- ADMIN DASHBOARD ----------------
+# Optional admin landing page (keep)
 @app.route("/admin")
 def admin_dashboard():
     if "admin_id" not in session:
@@ -317,6 +316,7 @@ def dept_dashboard(dept):
     )
 
 
+# ✅ Proof required for In Progress / Resolved
 @app.route("/complaint/<int:complaint_id>/status", methods=["POST"])
 def complaint_status_update(complaint_id):
     if "admin_id" not in session:
@@ -325,13 +325,20 @@ def complaint_status_update(complaint_id):
     status = request.form.get("status", "Pending")
     next_url = request.form.get("next", "/admin")
 
-    # Optional proof file upload for status update
     proof = request.files.get("proof")
-    proof_path = ""
 
+    # Require proof for In Progress & Resolved
+    if status in ["In Progress", "Resolved"]:
+        if not proof or not proof.filename:
+            # Redirect back with error flag
+            if "?" in next_url:
+                return redirect(next_url + "&err=proof_required")
+            return redirect(next_url + "?err=proof_required")
+
+    proof_path = ""
     if proof and proof.filename:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        fname = f"{timestamp}_admin_{proof.filename}"
+        fname = f"{timestamp}_admin_{secure_filename(proof.filename)}"
         proof_path = os.path.join(app.config["UPLOAD_FOLDER"], fname).replace("\\", "/")
         proof.save(proof_path)
 
@@ -340,5 +347,5 @@ def complaint_status_update(complaint_id):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
