@@ -23,18 +23,17 @@
             justify-content: space-between;
             align-items: center;
             color: #fff;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
+            gap: 12px;
             flex-wrap: wrap;
-            gap: 10px;
         }
 
         .btn {
             text-decoration: none;
             padding: 10px 14px;
-            border-radius: 12px;
+            border-radius: 10px;
             display: inline-block;
             font-weight: 800;
-            transition: 0.2s ease;
         }
 
         .btn-dark {
@@ -47,44 +46,52 @@
             color: #fff;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        h2 {
+            color: #fff;
+            margin: 0;
         }
 
-        h2 {
-            margin: 0;
+        .alert {
+            background: rgba(255, 255, 255, 0.92);
+            border-left: 6px solid #ef4444;
+            color: #111827;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            font-weight: 800;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
         }
 
         .card {
             background: #fff;
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 18px;
-            margin-bottom: 18px;
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
         }
 
         .row {
             display: flex;
             flex-wrap: wrap;
             gap: 14px;
+            align-items: flex-start;
         }
 
         .col {
             flex: 1;
-            min-width: 250px;
+            min-width: 240px;
         }
 
         .meta {
             color: #4b5563;
             font-size: 14px;
-            margin: 6px 0;
+            margin: 8px 0;
         }
 
         .tags {
@@ -96,7 +103,7 @@
             padding: 6px 10px;
             border-radius: 999px;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 900;
             margin-right: 8px;
             color: #fff;
         }
@@ -131,13 +138,13 @@
             width: 180px;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
-            margin-top: 8px;
             margin-right: 10px;
+            margin-top: 8px;
         }
 
         .statusbox {
-            margin-top: 14px;
-            padding-top: 14px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid #e5e7eb;
             display: flex;
             flex-wrap: wrap;
@@ -145,12 +152,20 @@
             align-items: center;
         }
 
-        select,
-        input {
+        select {
             padding: 8px 10px;
             border-radius: 10px;
             border: 1px solid #d1d5db;
+            font-weight: 800;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
             font-weight: 700;
+            max-width: 280px;
+            background: #fff;
         }
 
         button {
@@ -159,7 +174,7 @@
             border-radius: 10px;
             background: #111827;
             color: #fff;
-            font-weight: 800;
+            font-weight: 900;
             cursor: pointer;
         }
 
@@ -167,33 +182,30 @@
             opacity: 0.92;
         }
 
-        .proof-box {
-            margin-top: 8px;
-            background: #f3f4f6;
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: 700;
-            color: #111827;
+        .hint {
+            width: 100%;
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 800;
+            margin-top: 4px;
         }
 
         .empty {
             color: #fff;
             text-align: center;
             font-size: 18px;
-            margin-top: 60px;
+            margin-top: 50px;
+            font-weight: 800;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-
         <div class="topbar">
             <div>
                 <h2>{{ dept_name }} Department Dashboard</h2>
-                <div style="opacity:0.9; margin-top:4px;">
-                    Logged in as: <b>{{ admin_name }}</b>
-                </div>
+                <div style="opacity:0.9; margin-top:4px;">Logged in as: {{ admin_name }}</div>
             </div>
             <div>
                 <a class="btn btn-dark" href="/admin">Admin Dashboard</a>
@@ -201,23 +213,28 @@
             </div>
         </div>
 
-        {% if complaints and complaints|length > 0 %}
+        {% if request.args.get("err") == "proof_required" %}
+        <div class="alert">
+            ⚠️ Proof image is required for <b>In Progress</b> or <b>Resolved</b>. Please upload a proof and update
+            again.
+        </div>
+        {% endif %}
 
+        {% if complaints and complaints|length > 0 %}
         {% for c in complaints %}
         <div class="card">
             <div class="row">
-
                 <div class="col">
-                    <div style="font-size:17px; font-weight:900;">
+                    <div style="font-size:16px; font-weight:900; color:#111827;">
                         Complaint #{{ c["id"] }}
                     </div>
 
                     <div class="meta">
-                        👤 <b>{{ c["name"] }}</b> | 📞 {{ c["phone"] }} <br>
+                        👤 <b>{{ c["name"] }}</b> | 📞 {{ c["phone"] }}<br>
                         📍 {{ c["address"] }}
                     </div>
 
-                    <div style="margin-top:8px; font-weight:800;">
+                    <div style="font-size:15px; font-weight:900; margin-top:8px;">
                         {{ c["complaint"] }}
                     </div>
 
@@ -241,31 +258,35 @@
 
                     <div class="meta">🕒 {{ c["created_at"] }}</div>
 
-                    {% if c["admin_proof"] %}
-                    <div class="proof-box">
-                        ✔ Admin Proof: {{ c["admin_proof"] }} <br>
-                        ⏱ Updated at: {{ c["status_updated_at"] }}
-                    </div>
-                    {% endif %}
-
                     <div class="statusbox">
-                        <form method="POST" action="/complaint/{{ c['id'] }}/status" style="margin:0;">
+                        <b>Status:</b> {{ c["status"] }}
+
+                        <!-- IMPORTANT: enctype for file upload -->
+                        <form method="POST" action="/complaint/{{ c['id'] }}/status" enctype="multipart/form-data"
+                            style="margin:0;" class="status-form">
                             <input type="hidden" name="next" value="/dept/{{ dept }}">
 
-                            <select name="status" required>
-                                <option value="Pending" {% if c["status"]=="Pending" %}selected{% endif %}>Pending
-                                </option>
-                                <option value="In Progress" {% if c["status"]=="In Progress" %}selected{% endif %}>In
-                                    Progress</option>
-                                <option value="Resolved" {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved
-                                </option>
+                            <select name="status" class="status-select">
+                                <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
+                                <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
+                                <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
                             </select>
 
-                            <input name="admin_proof" placeholder="Enter proof / action taken (required)" required>
+                            <input type="file" name="proof" accept="image/*" class="proof-input">
 
                             <button type="submit">Update</button>
+
+                            <div class="hint">
+                                Proof image is mandatory for <b>In Progress</b> / <b>Resolved</b>.
+                            </div>
                         </form>
                     </div>
+
+                    {% if c.get("admin_proof_path") %}
+                    <div class="meta" style="margin-top:8px;">
+                        ✅ Admin proof uploaded: <a href="/{{ c['admin_proof_path'] }}" target="_blank">View</a>
+                    </div>
+                    {% endif %}
 
                 </div>
 
@@ -277,18 +298,30 @@
                     <img src="/{{ c['photo2_path'] }}" alt="Photo 2">
                     {% endif %}
                 </div>
-
             </div>
         </div>
         {% endfor %}
-
         {% else %}
-        <div class="empty">
-            🚫 No complaints assigned to this department yet.
-        </div>
+        <div class="empty">🚫 No complaints assigned to this department yet.</div>
         {% endif %}
-
     </div>
+
+    <script>
+        // Make proof required only for In Progress / Resolved (frontend validation)
+        function setProofRequired(form) {
+            const select = form.querySelector(".status-select");
+            const proof = form.querySelector(".proof-input");
+            const v = (select.value || "").toLowerCase();
+            const must = (v === "in progress" || v === "resolved");
+            proof.required = must;
+        }
+
+        document.querySelectorAll(".status-form").forEach((form) => {
+            setProofRequired(form);
+            const select = form.querySelector(".status-select");
+            select.addEventListener("change", () => setProofRequired(form));
+        });
+    </script>
 </body>
 
 </html>
