@@ -2,110 +2,80 @@
 <html>
 
 <head>
-    <title>{{ dept_name }} Department</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Department Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
+            font-family: Arial;
             background: linear-gradient(to right, #4e73df, #1cc88a);
         }
 
-        .container {
+        .wrap {
             max-width: 1100px;
             margin: auto;
         }
 
-        .topbar {
+        .top {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
             color: #fff;
             margin-bottom: 14px;
-            gap: 12px;
-            flex-wrap: wrap;
         }
 
         .btn {
-            text-decoration: none;
-            padding: 10px 14px;
-            border-radius: 10px;
-            display: inline-block;
-            font-weight: 800;
-        }
-
-        .btn-dark {
             background: #111827;
             color: #fff;
+            text-decoration: none;
+            font-weight: 900;
+            padding: 10px 14px;
+            border-radius: 12px;
         }
 
-        .btn-red {
+        .btn2 {
             background: #ef4444;
-            color: #fff;
-        }
-
-        h2 {
-            color: #fff;
-            margin: 0;
         }
 
         .alert {
-            background: rgba(255, 255, 255, 0.92);
+            background: #fff;
             border-left: 6px solid #ef4444;
-            color: #111827;
-            padding: 12px 14px;
+            padding: 12px;
             border-radius: 12px;
+            font-weight: 900;
             margin-bottom: 14px;
-            font-weight: 800;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
         }
 
         .card {
             background: #fff;
             border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
+            padding: 16px;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, .2);
+            margin-bottom: 14px;
         }
 
         .row {
             display: flex;
-            flex-wrap: wrap;
             gap: 14px;
-            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
         .col {
             flex: 1;
-            min-width: 240px;
-        }
-
-        .meta {
-            color: #4b5563;
-            font-size: 14px;
-            margin: 8px 0;
-        }
-
-        .tags {
-            margin: 10px 0;
+            min-width: 260px;
         }
 
         .tag {
             display: inline-block;
             padding: 6px 10px;
             border-radius: 999px;
-            font-size: 12px;
             font-weight: 900;
-            margin-right: 8px;
+            font-size: 12px;
             color: #fff;
+            margin-right: 8px;
         }
 
         .cat {
@@ -116,25 +86,12 @@
             background: #ef4444;
         }
 
-        .medium {
+        .med {
             background: #f59e0b;
             color: #111;
         }
 
-        .status-pending {
-            background: #6b7280;
-        }
-
-        .status-progress {
-            background: #f59e0b;
-            color: #111;
-        }
-
-        .status-resolved {
-            background: #22c55e;
-        }
-
-        .images img {
+        img {
             width: 180px;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
@@ -142,30 +99,12 @@
             margin-top: 8px;
         }
 
-        .statusbox {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        select {
-            padding: 8px 10px;
-            border-radius: 10px;
-            border: 1px solid #d1d5db;
-            font-weight: 800;
-        }
-
-        input[type="file"] {
+        select,
+        input[type=file] {
             padding: 8px;
             border-radius: 10px;
             border: 1px solid #d1d5db;
-            font-weight: 700;
-            max-width: 280px;
-            background: #fff;
+            font-weight: 800;
         }
 
         button {
@@ -177,149 +116,77 @@
             font-weight: 900;
             cursor: pointer;
         }
-
-        button:hover {
-            opacity: 0.92;
-        }
-
-        .hint {
-            width: 100%;
-            color: #6b7280;
-            font-size: 12px;
-            font-weight: 800;
-            margin-top: 4px;
-        }
-
-        .empty {
-            color: #fff;
-            text-align: center;
-            font-size: 18px;
-            margin-top: 50px;
-            font-weight: 800;
-        }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="topbar">
+    <div class="wrap">
+        <div class="top">
             <div>
-                <h2>{{ dept_name }} Department Dashboard</h2>
-                <div style="opacity:0.9; margin-top:4px;">Logged in as: {{ admin_name }}</div>
+                <h2 style="margin:0;">{{ dept|upper }} Dashboard</h2>
+                <div style="opacity:.95;font-weight:900;">{{ district }} - {{ taluk }} | Admin: {{ admin_name }}</div>
             </div>
-            <div>
-                <a class="btn btn-dark" href="/admin">Admin Dashboard</a>
-                <a class="btn btn-red" href="/admin/logout">Logout</a>
-            </div>
+            <a class="btn btn2" href="/admin/logout">Logout</a>
         </div>
 
-        {% if request.args.get("err") == "proof_required" %}
-        <div class="alert">
-            ⚠️ Proof image is required for <b>In Progress</b> or <b>Resolved</b>. Please upload a proof and update
-            again.
-        </div>
+        {% if err == "proof_required" %}
+        <div class="alert">⚠️ Proof image is required for <b>In Progress</b> / <b>Resolved</b>.</div>
         {% endif %}
 
-        {% if complaints and complaints|length > 0 %}
         {% for c in complaints %}
         <div class="card">
             <div class="row">
                 <div class="col">
-                    <div style="font-size:16px; font-weight:900; color:#111827;">
-                        Complaint #{{ c["id"] }}
-                    </div>
+                    <div style="font-weight:900;">Complaint #{{ c["id"] }} — {{ c["incident_district"] }} / {{
+                        c["incident_taluk"] }}</div>
+                    <div style="margin-top:6px;font-weight:800;color:#374151;">{{ c["incident_area"] }}</div>
+                    <div style="margin-top:8px;font-weight:900;">{{ c["complaint"] }}</div>
 
-                    <div class="meta">
-                        👤 <b>{{ c["name"] }}</b> | 📞 {{ c["phone"] }}<br>
-                        📍 {{ c["address"] }}
-                    </div>
-
-                    <div style="font-size:15px; font-weight:900; margin-top:8px;">
-                        {{ c["complaint"] }}
-                    </div>
-
-                    <div class="tags">
+                    <div style="margin-top:10px;">
                         <span class="tag cat">{{ c["category"] }}</span>
-
-                        {% if c["priority"] == "High" %}
-                        <span class="tag high">High Priority</span>
-                        {% else %}
-                        <span class="tag medium">Medium Priority</span>
-                        {% endif %}
-
-                        {% if c["status"] == "Pending" %}
-                        <span class="tag status-pending">Pending</span>
-                        {% elif c["status"] == "In Progress" %}
-                        <span class="tag status-progress">In Progress</span>
-                        {% else %}
-                        <span class="tag status-resolved">Resolved</span>
-                        {% endif %}
+                        {% if c["priority"]=="High" %}<span class="tag high">High</span>{% else %}<span
+                            class="tag med">Medium</span>{% endif %}
+                        <span class="tag" style="background:#6b7280;">{{ c["status"] }}</span>
                     </div>
 
-                    <div class="meta">🕒 {{ c["created_at"] }}</div>
-
-                    <div class="statusbox">
-                        <b>Status:</b> {{ c["status"] }}
-
-                        <!-- IMPORTANT: enctype for file upload -->
-                        <form method="POST" action="/complaint/{{ c['id'] }}/status" enctype="multipart/form-data"
-                            style="margin:0;" class="status-form">
-                            <input type="hidden" name="next" value="/dept/{{ dept }}">
-
-                            <select name="status" class="status-select">
-                                <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
-                                <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
-                                <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
-                            </select>
-
-                            <input type="file" name="proof" accept="image/*" class="proof-input">
-
-                            <button type="submit">Update</button>
-
-                            <div class="hint">
-                                Proof image is mandatory for <b>In Progress</b> / <b>Resolved</b>.
-                            </div>
-                        </form>
-                    </div>
+                    <form method="POST" action="/complaint/{{ c['id'] }}/status" enctype="multipart/form-data"
+                        style="margin-top:12px;">
+                        <input type="hidden" name="next" value="/admin/department">
+                        <select name="status" class="st">
+                            <option {% if c["status"]=="Pending" %}selected{% endif %}>Pending</option>
+                            <option {% if c["status"]=="In Progress" %}selected{% endif %}>In Progress</option>
+                            <option {% if c["status"]=="Resolved" %}selected{% endif %}>Resolved</option>
+                        </select>
+                        <input type="file" name="proof" accept="image/*" class="pf">
+                        <button type="submit">Update</button>
+                    </form>
 
                     {% if c.get("admin_proof_path") %}
-                    <div class="meta" style="margin-top:8px;">
-                        ✅ Admin proof uploaded: <a href="/{{ c['admin_proof_path'] }}" target="_blank">View</a>
+                    <div style="margin-top:8px;font-weight:900;">
+                        Admin proof: <a href="/{{ c['admin_proof_path'] }}" target="_blank">View</a>
                     </div>
                     {% endif %}
-
                 </div>
 
-                <div class="col images">
-                    {% if c["photo1_path"] %}
-                    <img src="/{{ c['photo1_path'] }}" alt="Photo 1">
-                    {% endif %}
-                    {% if c["photo2_path"] %}
-                    <img src="/{{ c['photo2_path'] }}" alt="Photo 2">
-                    {% endif %}
+                <div class="col">
+                    {% if c["photo1_path"] %}<img src="/{{ c['photo1_path'] }}">{% endif %}
+                    {% if c["photo2_path"] %}<img src="/{{ c['photo2_path'] }}">{% endif %}
                 </div>
             </div>
         </div>
         {% endfor %}
-        {% else %}
-        <div class="empty">🚫 No complaints assigned to this department yet.</div>
-        {% endif %}
     </div>
 
     <script>
-        // Make proof required only for In Progress / Resolved (frontend validation)
-        function setProofRequired(form) {
-            const select = form.querySelector(".status-select");
-            const proof = form.querySelector(".proof-input");
-            const v = (select.value || "").toLowerCase();
-            const must = (v === "in progress" || v === "resolved");
-            proof.required = must;
-        }
-
-        document.querySelectorAll(".status-form").forEach((form) => {
-            setProofRequired(form);
-            const select = form.querySelector(".status-select");
-            select.addEventListener("change", () => setProofRequired(form));
+        document.querySelectorAll('form').forEach(f => {
+            const st = f.querySelector('.st');
+            const pf = f.querySelector('.pf');
+            function req() {
+                const v = (st.value || '').toLowerCase();
+                pf.required = (v === 'in progress' || v === 'resolved');
+            }
+            st.addEventListener('change', req);
+            req();
         });
     </script>
 </body>

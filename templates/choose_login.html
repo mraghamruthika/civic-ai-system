@@ -11,87 +11,59 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             background: linear-gradient(to right, #4e73df, #1cc88a);
             padding: 20px;
         }
 
         .card {
-            width: 100%;
-            max-width: 520px;
             background: #fff;
-            border-radius: 18px;
-            padding: 30px;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            padding: 26px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
             text-align: center;
         }
 
-        h1 {
-            margin: 0;
+        h2 {
+            margin: 0 0 8px;
             color: #111827;
-            font-size: 26px;
-            font-weight: 900;
         }
 
-        p {
-            margin: 10px 0 22px;
-            color: #4b5563;
-            font-weight: 700;
-        }
-
-        .btns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
+        .sub {
+            color: #6b7280;
+            font-weight: 800;
+            margin-bottom: 18px;
         }
 
         a {
-            text-decoration: none;
-        }
-
-        .btn {
             display: block;
-            padding: 14px 14px;
-            border-radius: 14px;
+            text-decoration: none;
             font-weight: 900;
-            border: 2px solid transparent;
-            transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
-            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+            padding: 14px;
+            border-radius: 12px;
+            margin: 10px 0;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
-            opacity: .98;
-        }
-
-        .user {
-            background: #2563eb;
-            color: #fff;
-        }
-
-        .admin {
+        .u {
             background: #111827;
             color: #fff;
         }
 
-        @media(max-width:520px) {
-            .btns {
-                grid-template-columns: 1fr;
-            }
+        .a {
+            background: #2563eb;
+            color: #fff;
         }
     </style>
 </head>
 
 <body>
     <div class="card">
-        <h1>Civic AI Complaint System</h1>
-        <p>Select your login type</p>
-
-        <div class="btns">
-            <a class="btn user" href="/login">User Login</a>
-            <a class="btn admin" href="/admin/login">Admin Login</a>
-        </div>
+        <h2>Civic AI Complaint System</h2>
+        <div class="sub">Tamil Nadu – Department + Taluk Routing</div>
+        <a class="u" href="/login">User Login</a>
+        <a class="a" href="/admin/login">Admin / Head Login</a>
     </div>
 </body>
 

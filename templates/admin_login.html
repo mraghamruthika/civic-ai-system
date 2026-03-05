@@ -2,45 +2,45 @@
 <html>
 
 <head>
-    <title>Admin Login</title>
+    <title>Admin / Head Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4e73df, #1cc88a);
-            min-height: 100vh;
             margin: 0;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: Arial;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
             padding: 20px;
         }
 
         .card {
             background: #fff;
-            width: 100%;
+            border-radius: 16px;
             max-width: 520px;
-            border-radius: 18px;
-            padding: 30px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
+            width: 100%;
+            padding: 26px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
         }
 
         h2 {
             margin: 0 0 8px;
             color: #111827;
-            text-align: center;
         }
 
         .sub {
             color: #6b7280;
-            text-align: center;
-            margin: 0 0 18px;
+            font-weight: 800;
+            margin-bottom: 16px;
         }
 
         label {
-            font-weight: 800;
             display: block;
-            margin: 12px 0 6px;
+            font-weight: 900;
+            margin-top: 12px;
+            margin-bottom: 6px;
         }
 
         input {
@@ -48,14 +48,14 @@
             padding: 12px;
             border-radius: 12px;
             border: 1px solid #d1d5db;
-            font-weight: 700;
+            font-weight: 800;
         }
 
         button {
             width: 100%;
-            margin-top: 16px;
+            margin-top: 18px;
             padding: 14px;
-            border: none;
+            border: 0;
             border-radius: 12px;
             background: #111827;
             color: #fff;
@@ -63,48 +63,44 @@
             cursor: pointer;
         }
 
-        button:hover {
-            opacity: .92;
+        .msg {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            font-weight: 900;
         }
 
-        .msg {
+        .row {
+            display: flex;
+            justify-content: space-between;
             margin-top: 12px;
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #7f1d1d;
-            padding: 10px;
-            border-radius: 12px;
-            font-weight: 800;
+            font-weight: 900;
         }
 
         a {
+            text-decoration: none;
             color: #2563eb;
-            font-weight: 800;
         }
     </style>
 </head>
 
 <body>
     <div class="card">
-        <h2>Admin Login</h2>
-        <p class="sub">Login using your registered email & password</p>
-
+        <h2>Admin / Head Login</h2>
+        <div class="sub">Login using email and password.</div>
         {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
-
         <form method="POST">
-            <label>Email</label>
-            <input type="email" name="email" required placeholder="admin@gmail.com" />
-
-            <label>Password</label>
-            <input type="password" name="password" required placeholder="••••••••" />
-
+            <label>Email</label><input name="email" type="email" required>
+            <label>Password</label><input name="password" type="password" required>
             <button type="submit">Login</button>
         </form>
-
-        <p style="text-align:center; margin-top:14px;">
-            New admin? <a href="/admin/register">Create account</a> |
-            <a href="/">Back</a>
-        </p>
+        <div class="row">
+            <a href="/admin/register">Register</a>
+            <a href="/admin/forgot">Forgot password?</a>
+        </div>
     </div>
 </body>
 

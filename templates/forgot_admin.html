@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>User Login</title>
+    <title>Forgot Password</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
@@ -23,17 +23,6 @@
             width: 100%;
             padding: 26px;
             box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
-        }
-
-        h2 {
-            margin: 0 0 8px;
-            color: #111827;
-        }
-
-        .sub {
-            color: #6b7280;
-            font-weight: 800;
-            margin-bottom: 16px;
         }
 
         label {
@@ -72,35 +61,17 @@
             color: #9a3412;
             font-weight: 900;
         }
-
-        .row {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 12px;
-            font-weight: 900;
-        }
-
-        a {
-            text-decoration: none;
-            color: #2563eb;
-        }
     </style>
 </head>
 
 <body>
     <div class="card">
-        <h2>User Login</h2>
-        <div class="sub">Login to submit complaints.</div>
+        <h2>Forgot Password (Admin/Head)</h2>
         {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
         <form method="POST">
-            <label>Phone</label><input name="phone" required>
-            <label>Password</label><input type="password" name="password" required>
-            <button type="submit">Login</button>
+            <label>Email</label><input name="email" type="email" required>
+            <button type="submit">Send OTP</button>
         </form>
-        <div class="row">
-            <a href="/register">Create account</a>
-            <a href="/user/forgot">Forgot password?</a>
-        </div>
     </div>
 </body>
 

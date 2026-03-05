@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>District Head Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            color: #fff;
+            margin-bottom: 14px;
+        }
+
+        .btn {
+            background: #ef4444;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 900;
+            padding: 10px 14px;
+            border-radius: 12px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, .2);
+            margin-bottom: 14px;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            font-weight: 900;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 900;
+            font-size: 12px;
+            color: #fff;
+            margin-right: 8px;
+            background: #111827;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="top">
+            <div>
+                <h2 style="margin:0;">District Head Dashboard</h2>
+                <div style="opacity:.95;font-weight:900;">District: {{ district }} | Head: {{ admin_name }}</div>
+            </div>
+            <a class="btn" href="/admin/logout">Logout</a>
+        </div>
+
+        <div class="card">
+            <form method="GET" action="/head" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <select name="dept">
+                    {% for d in departments %}
+                    <option value="{{ d }}" {% if d==dept_filter %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="taluk">
+                    <option value="all" {% if taluk_filter=="all" %}selected{% endif %}>all</option>
+                    {% for t in taluks %}
+                    <option value="{{ t }}" {% if t==taluk_filter %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+
+                <button
+                    style="padding:10px 14px;border-radius:12px;border:0;background:#111827;color:#fff;font-weight:900;cursor:pointer;">Filter</button>
+            </form>
+        </div>
+
+        {% for c in complaints %}
+        <div class="card">
+            <div style="font-weight:900;">Complaint #{{ c["id"] }} — {{ c["assigned_department"] }} — {{
+                c["incident_taluk"] }}</div>
+            <div style="margin-top:6px;font-weight:800;color:#374151;">{{ c["incident_area"] }}</div>
+            <div style="margin-top:8px;font-weight:900;">{{ c["complaint"] }}</div>
+            <div style="margin-top:10px;">
+                <span class="tag">{{ c["status"] }}</span>
+                <span class="tag">{{ c["priority"] }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+
+</html>

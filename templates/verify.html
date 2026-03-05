@@ -2,111 +2,99 @@
 <html>
 
 <head>
-    <title>Verify OTP - Civic AI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Verify OTP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4e73df, #1cc88a);
+            margin: 0;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            margin: 0;
-            padding: 18px;
+            justify-content: center;
+            font-family: Arial;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
+            padding: 20px;
         }
 
         .card {
-            width: 100%;
-            max-width: 520px;
             background: #fff;
-            padding: 22px;
-            border-radius: 12px;
-            box-shadow: 0 4px 22px rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            padding: 26px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
         }
 
         h2 {
-            margin: 0 0 6px 0;
-            text-align: center;
+            margin: 0 0 8px;
+            color: #111827;
         }
 
-        p.sub {
-            margin: 0 0 16px 0;
-            text-align: center;
-            color: #555;
+        .sub {
+            color: #6b7280;
+            font-weight: 900;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
+            font-weight: 900;
             margin-top: 12px;
-            font-weight: 600;
+            margin-bottom: 6px;
         }
 
         input {
             width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            margin-top: 8px;
-            box-sizing: border-box;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #d1d5db;
+            font-weight: 800;
         }
 
         button {
             width: 100%;
-            margin-top: 16px;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: #4e73df;
+            margin-top: 18px;
+            padding: 14px;
+            border: 0;
+            border-radius: 12px;
+            background: #111827;
             color: #fff;
-            font-size: 16px;
+            font-weight: 900;
             cursor: pointer;
-        }
-
-        button:hover {
-            background: #2e59d9;
         }
 
         .msg {
             margin-top: 10px;
-            padding: 10px;
-            border-radius: 8px;
-            background: #fde2e2;
-            border: 1px solid #f5c2c7;
-            color: #a11a1a;
-            font-weight: 700;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            font-weight: 900;
         }
 
-        .otpbox {
+        .demo {
             margin-top: 10px;
+            font-weight: 900;
+            color: #111827;
+            background: #f3f4f6;
+            border-radius: 12px;
             padding: 10px;
-            border-radius: 8px;
-            background: #f3f6ff;
-            border: 1px solid #dbe4ff;
-            font-weight: 800;
-            text-align: center;
         }
     </style>
 </head>
 
 <body>
     <div class="card">
-        <h2>OTP Verification</h2>
-        <p class="sub">One-time verification to activate account</p>
-
-        <!-- PoC DEMO OTP (remove in real system) -->
-        <div class="otpbox">Demo OTP: {{ otp_demo }}</div>
-
-        {% if msg %}
-        <div class="msg">{{ msg }}</div>
-        {% endif %}
-
+        <h2>{{ who }} OTP Verification</h2>
+        <div class="sub">Enter OTP to verify registration.</div>
+        {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
         <form method="POST">
-            <label>Enter OTP</label>
-            <input name="otp" placeholder="6-digit OTP" required>
+            <label>OTP</label>
+            <input name="otp" required>
             <button type="submit">Verify</button>
         </form>
+        <div class="demo">Demo OTP (for hackathon): <b>{{ otp_demo }}</b></div>
     </div>
 </body>
 

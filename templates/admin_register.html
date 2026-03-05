@@ -2,61 +2,66 @@
 <html>
 
 <head>
-    <title>Admin Registration</title>
+    <title>Admin / Head Register</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4e73df, #1cc88a);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial;
+            background: linear-gradient(to right, #4e73df, #1cc88a);
             padding: 20px;
         }
 
-        .box {
+        .card {
             background: #fff;
+            border-radius: 16px;
+            max-width: 620px;
             width: 100%;
-            max-width: 420px;
             padding: 26px;
-            border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
         }
 
         h2 {
-            margin: 0 0 6px;
+            margin: 0 0 8px;
             color: #111827;
         }
 
         .sub {
             color: #6b7280;
-            font-weight: 700;
-            margin-bottom: 14px;
+            font-weight: 800;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
+            font-weight: 900;
             margin-top: 12px;
-            font-weight: 800;
-            color: #111827;
+            margin-bottom: 6px;
         }
 
         input,
         select {
             width: 100%;
             padding: 12px;
-            margin-top: 6px;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #d1d5db;
-            font-weight: 700;
+            font-weight: 800;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
         button {
             width: 100%;
             margin-top: 18px;
-            padding: 12px;
+            padding: 14px;
             border: 0;
             border-radius: 12px;
             background: #111827;
@@ -65,74 +70,105 @@
             cursor: pointer;
         }
 
-        button:hover {
-            opacity: .95;
-        }
-
         .msg {
-            background: #ecfeff;
-            border: 1px solid #a5f3fc;
-            padding: 10px;
-            border-radius: 10px;
-            margin: 10px 0;
-            font-weight: 800;
-            color: #0f172a;
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            font-weight: 900;
         }
 
-        .links {
-            margin-top: 14px;
-            text-align: center;
-            font-weight: 800;
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-weight: 900;
         }
 
-        .links a {
-            color: #2563eb;
+        a {
             text-decoration: none;
+            color: #2563eb;
         }
     </style>
 </head>
 
 <body>
-    <div class="box">
-        <h2>Admin Registration</h2>
-        <div class="sub">Register and verify with OTP</div>
-
-        {% if msg %}
-        <div class="msg">{{ msg }}</div>
-        {% endif %}
+    <div class="card">
+        <h2>Admin / District Head Registration</h2>
+        <div class="sub">Register with OTP verification.</div>
+        {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
 
         <form method="POST">
-            <label>Name</label>
-            <input name="name" placeholder="Enter your name" required />
+            <label>Name</label><input name="name" required>
+            <label>Email</label><input name="email" type="email" required>
 
-            <label>Email</label>
-            <input type="email" name="email" placeholder="Enter your email" required />
-
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Create password" required />
-
-            <label>Department</label>
-            <select name="department" required>
-                <option value="" disabled selected>Select your department</option>
-                <option value="roads">Roads</option>
-                <option value="water">Water Supply</option>
-                <option value="drainage">Drainage & Sewage</option>
-                <option value="sanitation">Sanitation</option>
-                <option value="electricity">Electricity</option>
-                <option value="streetlights">Street Lights</option>
-                <option value="health">Health & Hygiene</option>
-                <option value="animals">Animal Control</option>
-                <option value="emergency">Emergency</option>
-                <option value="general">General</option>
+            <label>Role</label>
+            <select name="role" id="role">
+                <option value="admin">Department Admin (Taluk)</option>
+                <option value="head">District Head (All Taluks)</option>
             </select>
 
+            <div class="grid">
+                <div>
+                    <label>District</label>
+                    <select name="district" id="d" required>
+                        {% for di in districts %}<option value="{{ di }}">{{ di }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Taluk (Admin only)</label>
+                    <select name="taluk" id="t" required></select>
+                </div>
+            </div>
+
+            <label>Department (Admin only)</label>
+            <select name="department" id="dept" required>
+                {% for label, key in departments %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Password</label><input type="password" name="password" required>
             <button type="submit">Register</button>
         </form>
 
-        <div class="links">
-            Already have an account? <a href="/admin/login">Admin Login</a>
+        <div class="row">
+            <a href="/admin/login">Login</a>
+            <a href="/">Back</a>
         </div>
     </div>
+
+    <script>
+        const TN = {{ tn| tojson }};
+        const d = document.getElementById('d');
+        const t = document.getElementById('t');
+        const role = document.getElementById('role');
+        const dept = document.getElementById('dept');
+
+        function fillTaluk() {
+            t.innerHTML = '';
+            (TN[d.value] || []).forEach(x => {
+                const o = document.createElement('option'); o.value = x; o.textContent = x; t.appendChild(o);
+            });
+        }
+
+        function applyRole() {
+            const isHead = role.value === 'head';
+            dept.disabled = isHead;
+            t.disabled = isHead;
+            if (isHead) {
+                dept.value = 'general';
+            }
+        }
+
+        d.addEventListener('change', fillTaluk);
+        role.addEventListener('change', applyRole);
+
+        fillTaluk();
+        applyRole();
+    </script>
 </body>
 
 </html>
