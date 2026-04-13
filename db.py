@@ -1,8 +1,7 @@
 import sqlite3
 import os
 
-# Render persistent disk support:
-# In Render set env: DB_DIR=/var/data and attach a disk mounted to /var/data
+
 DEFAULT_DB_DIR = os.environ.get("DB_DIR", "")
 if DEFAULT_DB_DIR:
     os.makedirs(DEFAULT_DB_DIR, exist_ok=True)
@@ -29,7 +28,7 @@ def init_db():
     conn = get_db()
     cur = conn.cursor()
 
-    # USERS
+
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +42,7 @@ def init_db():
     )
     """)
 
-    # ADMINS (includes district head)
+   
     cur.execute("""
     CREATE TABLE IF NOT EXISTS admins (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +57,7 @@ def init_db():
     )
     """)
 
-    # COMPLAINTS
+    
     cur.execute("""
     CREATE TABLE IF NOT EXISTS complaints (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,14 +80,13 @@ def init_db():
     )
     """)
 
-    # Backward compatible ALTER (if old DB exists)
-    # users:
+    
     if not _column_exists(conn, "users", "home_district"):
         cur.execute("ALTER TABLE users ADD COLUMN home_district TEXT DEFAULT 'Unknown'")
     if not _column_exists(conn, "users", "home_taluk"):
         cur.execute("ALTER TABLE users ADD COLUMN home_taluk TEXT DEFAULT 'Unknown'")
 
-    # admins:
+    
     if not _column_exists(conn, "admins", "role"):
         cur.execute("ALTER TABLE admins ADD COLUMN role TEXT DEFAULT 'admin'")
     if not _column_exists(conn, "admins", "department"):
@@ -98,7 +96,7 @@ def init_db():
     if not _column_exists(conn, "admins", "taluk"):
         cur.execute("ALTER TABLE admins ADD COLUMN taluk TEXT DEFAULT 'all'")
 
-    # complaints:
+    
     if not _column_exists(conn, "complaints", "incident_district"):
         cur.execute("ALTER TABLE complaints ADD COLUMN incident_district TEXT DEFAULT 'Unknown'")
     if not _column_exists(conn, "complaints", "incident_taluk"):
@@ -110,7 +108,6 @@ def init_db():
     conn.close()
 
 
-# ---------------- USERS ----------------
 def create_user(name, address, phone, password, home_district="Unknown", home_taluk="Unknown"):
     conn = get_db()
     cur = conn.cursor()
@@ -150,7 +147,6 @@ def update_user_password(phone, new_password):
     conn.close()
 
 
-# ---------------- ADMINS ----------------
 def create_admin(name, email, password, role="admin", department="general", district="Unknown", taluk="all"):
     conn = get_db()
     cur = conn.cursor()
@@ -191,7 +187,6 @@ def update_admin_password(email, new_password):
     conn.close()
 
 
-# ---------------- COMPLAINTS ----------------
 def insert_complaint(data):
     conn = get_db()
     conn.execute("""

@@ -6,18 +6,15 @@ from werkzeug.utils import secure_filename
 
 from db import (
     init_db,
-    # user
     create_user,
     get_user_by_phone,
     verify_user as verify_user_db,
     update_user_password,
-    # complaints
     insert_complaint,
     get_complaints_by_user,
     get_complaints_for_admin,
     get_complaints_for_head,
     update_complaint_status,
-    # admin/head
     create_admin,
     get_admin_by_email,
     verify_admin as verify_admin_db,
@@ -33,7 +30,6 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 init_db()
 
-# ---------------- Tamil Nadu starter data ----------------
 TN = {
     "Tiruchirappalli": ["Tiruchirappalli", "Srirangam", "Lalgudi", "Manachanallur", "Thiruverumbur", "Musiri", "Thottiyam", "Thuraiyur"],
     "Chennai": ["Egmore", "Mylapore", "Guindy", "Perambur", "Ambattur", "Maduravoyal"],
@@ -58,7 +54,6 @@ DEPARTMENTS = [
 ]
 
 
-# ---------------- AI LOGIC ----------------
 def get_category(text: str) -> str:
     t = (text or "").lower()
 
@@ -109,13 +104,11 @@ def get_department(category: str) -> str:
     return mapping.get(category, "general")
 
 
-# ---------------- LANDING ----------------
 @app.route("/")
 def choose_login():
     return render_template("choose_login.html")
 
 
-# ---------------- USER AUTH ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     msg = None
@@ -195,7 +188,6 @@ def logout():
     return redirect(url_for("choose_login"))
 
 
-# ---------------- USER FORGOT PASSWORD ----------------
 @app.route("/user/forgot", methods=["GET", "POST"])
 def user_forgot():
     msg = None
@@ -241,7 +233,6 @@ def user_reset():
     return render_template("reset_user.html", msg=msg, otp_demo=otp_demo)
 
 
-# ---------------- USER HOME / COMPLAINT ----------------
 @app.route("/home", methods=["GET", "POST"])
 def home():
     if "user_id" not in session:
@@ -318,7 +309,6 @@ def home():
     )
 
 
-# ---------------- USER MY COMPLAINTS ----------------
 @app.route("/my-complaints")
 def my_complaints():
     if "user_id" not in session:
@@ -332,7 +322,6 @@ def my_complaints():
     )
 
 
-# ---------------- ADMIN / HEAD AUTH ----------------
 @app.route("/admin/register", methods=["GET", "POST"])
 def admin_register():
     msg = None
@@ -439,7 +428,6 @@ def admin_logout():
     return redirect(url_for("choose_login"))
 
 
-# ---------------- ADMIN / HEAD FORGOT PASSWORD ----------------
 @app.route("/admin/forgot", methods=["GET", "POST"])
 def admin_forgot():
     msg = None
@@ -485,7 +473,7 @@ def admin_reset():
     return render_template("reset_admin.html", msg=msg, otp_demo=otp_demo)
 
 
-# ---------------- ADMIN DASHBOARD ----------------
+
 @app.route("/admin/department")
 def dept_dashboard():
     if "admin_id" not in session or session.get("admin_role") != "admin":
@@ -549,7 +537,7 @@ def admin_dashboard():
     return redirect(url_for("dept_dashboard"))
 
 
-# ---------------- STATUS UPDATE ----------------
+
 @app.route("/complaint/<int:complaint_id>/status", methods=["POST"])
 def complaint_status_update(complaint_id):
     if "admin_id" not in session:

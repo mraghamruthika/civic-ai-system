@@ -17,7 +17,6 @@ CATEGORIES = [
     ("General", "general"),
 ]
 
-# Words/phrases to make complaints feel real
 LOCATIONS = [
     "near bus stop", "near school", "near hospital", "near market", "near temple",
     "in my street", "in our area", "near junction", "near bridge", "near park",
@@ -105,7 +104,6 @@ TEMPLATES = {
     ],
 }
 
-# Priority keywords => High
 HIGH_TRIGGERS = [
     "accident", "fire", "collapse", "electrocution", "gas leak", "hospital",
     "dangerous", "bite risk", "open manhole", "sparking"
@@ -127,7 +125,7 @@ def generate_one(category: str) -> str:
 
 
 def make_dataset(n_rows: int = 5000, out_file: str = "dataset.csv"):
-    # Balanced across categories
+
     per_cat = n_rows // len(CATEGORIES)
     extra = n_rows % len(CATEGORIES)
 
